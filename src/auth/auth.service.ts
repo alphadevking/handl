@@ -1,32 +1,86 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { User } from '../database/entities/user.entity';
+import { Profile } from 'passport-google-oauth20';
+import { v4 as uuidv4 } from 'uuid';
 
 @Injectable()
 export class AuthService {
-  private readonly validApiKey: string; // Added a comment to trigger re-compilation
+  constructor(
+    private configService: ConfigService,
+    @InjectRepository(User)
+    private usersRepository: Repository<User>,
+  ) {}
 
-  constructor(private configService: ConfigService) {
-    this.validApiKey = this.configService.get<string>('API_KEY')!;
-    if (!this.validApiKey) {
-      console.warn('API_KEY is not configured. API key authentication will not work.');
-    }
+  /**
+   * Validates an API key by looking it up in the database.
+   * @param apiKey The API key to validate.
+   * @returns The User object if the API key is valid and active, otherwise null.
+   */
+  async validateApiKey(apiKey: string): Promise<User | null> {
+    const user = await this.usersRepository.findOne({ where: { apiKey } });
+    // In a real application, you might also check for an 'isActive' flag on the API key
+    return user || null;
   }
 
   /**
-   * Validates an API key.
-   * In a real application, this would involve checking a database for valid API keys
-   * and associating them with users or clients.
-   * @param apiKey The API key to validate.
-   * @returns A user object (or a representation of the authenticated client) if valid, otherwise null.
+   * Finds a user by their Google ID or email, or creates a new user if not found.
+   * Generates a unique API key for new users.
+   * @param profile The Google profile object.
+   * @returns The User object.
    */
-  async validateApiKey(apiKey: string): Promise<any> {
-    // In a real application, fetch API key from a database
-    // and associate it with a user or client.
-    // For now, we'll use a simple hardcoded check against a single API_KEY from .env.
-    if (this.validApiKey && apiKey === this.validApiKey) {
-      // API Key is valid, allow the flow to proceed
-      return true;
+  async findOrCreateGoogleUser(profile: Profile): Promise<User> {
+    let user = await this.usersRepository.findOne({
+      where: [{ googleId: profile.id }, { email: profile.emails[0].value }],
+    });
+
+    if (!user) {
+      user = this.usersRepository.create({
+        googleId: profile.id,
+        email: profile.emails[0].value,
+        firstName: profile.name.givenName,
+        lastName: profile.name.familyName,
+        picture: profile.photos[0]?.value,
+        apiKey: uuidv4(), // Generate a unique API key for the new user
+        json_fields: {}, // Initialize json_fields
+        metadata: {}, // Initialize metadata
+      });
+      await this.usersRepository.save(user);
+    } else {
+      // Update user profile if necessary (e.g., picture, name)
+      user.firstName = profile.name.givenName;
+      user.lastName = profile.name.familyName;
+      user.picture = profile.photos[0]?.value;
+      await this.usersRepository.save(user);
     }
-    return null;
+
+    return user;
+  }
+
+  /**
+   * Retrieves the global API key from configuration.
+   * This method is kept for compatibility if some parts still rely on a global key,
+   * but for user-specific access, validateApiKey should be used.
+   * @returns The global API key string.
+   */
+  /**
+   * Retrieves the global API key from configuration.
+   * This method is kept for compatibility if some parts still rely on a global key,
+   * but for user-specific access, validateApiKey should be used.
+   * @returns The global API key string.
+   */
+  getGlobalApiKey(): string {
+    return this.configService.get<string>('API_KEY')!;
+  }
+
+  /**
+   * Finds a user by their ID.
+   * @param id The ID of the user to find.
+   * @returns The User object if found, otherwise null.
+   */
+  async findUserById(id: number): Promise<User | null> {
+    return this.usersRepository.findOne({ where: { id } });
   }
 }

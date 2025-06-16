@@ -26,48 +26,59 @@ export class FormSubmissionService {
   }
 
   /**
-   * Retrieves all form entries.
-   * @returns A list of all FormEntry entities.
+   * Retrieves all form entries for a specific user.
+   * @param userId The ID of the user.
+   * @returns A list of all FormEntry entities for the user.
    */
-  async findAll(): Promise<FormEntry[]> {
-    return this.formEntryRepository.find();
+  async findAll(userId: number): Promise<FormEntry[]> {
+    return this.formEntryRepository.find({ where: { userId } });
   }
 
   /**
-   * Finds a single form entry by its ID.
+   * Finds a single form entry by its ID for a specific user.
+   * @param userId The ID of the user.
    * @param id The ID of the form entry to find.
    * @returns The found FormEntry entity.
-   * @throws NotFoundException if the form entry is not found.
+   * @throws NotFoundException if the form entry is not found for the given user.
    */
-  async findOne(id: number): Promise<FormEntry> {
-    const formEntry = await this.formEntryRepository.findOne({ where: { id } });
+  async findOne(userId: number, id: number): Promise<FormEntry> {
+    const formEntry = await this.formEntryRepository.findOne({ where: { id, userId } });
     if (!formEntry) {
-      throw new NotFoundException(`Form entry with ID "${id}" not found.`);
+      throw new NotFoundException(`Form entry with ID "${id}" not found for this user.`);
     }
     return formEntry;
   }
 
   /**
-   * Deletes a form entry by its ID.
+   * Deletes a form entry by its ID for a specific user.
+   * @param userId The ID of the user.
    * @param id The ID of the form entry to delete.
-   * @throws NotFoundException if the form entry is not found.
+   * @throws NotFoundException if the form entry is not found for the given user.
    */
-  async remove(id: number): Promise<void> {
-    const result = await this.formEntryRepository.delete(id);
+  async remove(userId: number, id: number): Promise<void> {
+    const result = await this.formEntryRepository.delete({ id, userId });
     if (result.affected === 0) {
-      throw new NotFoundException(`Form entry with ID "${id}" not found.`);
+      throw new NotFoundException(`Form entry with ID "${id}" not found for this user.`);
     }
-    this.logger.log(`Removed form entry: ${id}`);
+    this.logger.log(`Removed form entry: ${id} for user ${userId}`);
   }
 
-  async handleForm(dto: SubmitFormDto): Promise<void> {
-    this.logger.log(`Processing form submission for Form ID: ${dto.formId}`);
+  /**
+   * Handles a form submission, including validation, email notification, and saving to the database.
+   * @param userId The ID of the user submitting the form.
+   * @param dto The DTO containing the form submission data.
+   * @returns A Promise that resolves when the form is successfully handled.
+   * @throws BadRequestException if the form definition is not found or form data validation fails.
+   * @throws InternalServerErrorException if there's an error during form processing.
+   */
+  async handleForm(userId: number, dto: SubmitFormDto): Promise<void> {
+    this.logger.log(`Processing form submission for Form ID: ${dto.formId} by user ${userId}`);
 
     // 1. Fetch the form definition (schema)
-    const formDefinition = await this.formDefinitionService.findOne(dto.formId)
+    const formDefinition = await this.formDefinitionService.findOne(userId, dto.formId)
       .catch(error => {
         if (error.status === 404) {
-          throw new BadRequestException(`Form definition '${dto.formId}' not found.`);
+          throw new BadRequestException(`Form definition '${dto.formId}' not found for this user.`);
         }
         throw new InternalServerErrorException(`Failed to retrieve form definition: ${error.message}`);
       });
@@ -89,11 +100,11 @@ export class FormSubmissionService {
     try {
       await Promise.all([
         this.emailService.sendFormEmail(dto.formId, dto.formData),
-        this.databaseService.saveFormEntry(dto.formId, dto.formData),
+        this.databaseService.saveFormEntry(userId, dto.formId, dto.formData), // Pass userId to saveFormEntry
       ]);
-      this.logger.log(`Form submission for ${dto.formId} processed successfully.`);
+      this.logger.log(`Form submission for ${dto.formId} processed successfully for user ${userId}.`);
     } catch (error) {
-      this.logger.error(`Error during form processing for ${dto.formId}:`, error.message, error.stack);
+      this.logger.error(`Error during form processing for ${dto.formId} by user ${userId}:`, error.message, error.stack);
       throw new InternalServerErrorException(`Failed to process form submission: ${error.message}`);
     }
   }

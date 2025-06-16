@@ -3,11 +3,31 @@ import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import helmet from 'helmet'; // Import helmet
+import * as session from 'express-session'; // Import express-session
+import * as passport from 'passport'; // Import passport
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.use(helmet()); // Apply helmet for security headers
   const configService = app.get(ConfigService); // Get ConfigService instance
+
+  // Configure express-session
+  app.use(
+    session({
+      secret: configService.get<string>('SESSION_SECRET') || 'supersecret', // Use a strong secret from environment variables
+      resave: false,
+      saveUninitialized: false,
+      cookie: {
+        maxAge: 3600000, // 1 hour
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production', // Use secure cookies in production
+      },
+    }),
+  );
+
+  // Initialize Passport
+  app.use(passport.initialize());
+  app.use(passport.session());
 
   // 1. Enable Global Validation Pipe for DTOs
   app.useGlobalPipes(new ValidationPipe({

@@ -14,58 +14,73 @@ export class FormDefinitionService {
     private formDefinitionRepository: Repository<FormDefinition>,
   ) {}
 
-  async create(dto: CreateFormDefinitionDto): Promise<FormDefinition> {
-    const existing = await this.formDefinitionRepository.findOne({ where: { id: dto.id } });
+  /**
+   * Creates a new form definition for a specific user.
+   * @param userId The ID of the user creating the form definition.
+   * @param dto The DTO containing data for the new form definition.
+   * @returns The created FormDefinition entity.
+   * @throws ConflictException if a form definition with the same ID already exists for the user.
+   */
+  async create(userId: number, dto: CreateFormDefinitionDto): Promise<FormDefinition> {
+    const existing = await this.formDefinitionRepository.findOne({ where: { id: dto.id, userId } });
     if (existing) {
-      throw new ConflictException(`Form definition with ID "${dto.id}" already exists.`);
+      throw new ConflictException(`Form definition with ID "${dto.id}" already exists for this user.`);
     }
-    const newDefinition = this.formDefinitionRepository.create(dto);
-    this.logger.log(`Creating new form definition: ${dto.id}`);
+    const newDefinition = this.formDefinitionRepository.create({ ...dto, userId });
+    this.logger.log(`Creating new form definition: ${dto.id} for user ${userId}`);
     return this.formDefinitionRepository.save(newDefinition);
   }
 
-  async findAll(): Promise<FormDefinition[]> {
-    return this.formDefinitionRepository.find();
+  /**
+   * Finds all form definitions for a specific user.
+   * @param userId The ID of the user.
+   * @returns An array of FormDefinition entities.
+   */
+  async findAll(userId: number): Promise<FormDefinition[]> {
+    return this.formDefinitionRepository.find({ where: { userId } });
   }
 
   /**
-   * Finds a single form definition by its ID (which serves as its name).
+   * Finds a single form definition by its ID (which serves as its name) for a specific user.
+   * @param userId The ID of the user.
    * @param name The ID (name) of the form definition to find.
    * @returns The found FormDefinition entity.
-   * @throws NotFoundException if the form definition is not found.
+   * @throws NotFoundException if the form definition is not found for the given user.
    */
-  async findOne(name: string): Promise<FormDefinition> {
-    const form = await this.formDefinitionRepository.findOne({ where: { id: name } });
+  async findOne(userId: number, name: string): Promise<FormDefinition> {
+    const form = await this.formDefinitionRepository.findOne({ where: { id: name, userId } });
     if (!form) {
-      throw new NotFoundException(`Form definition with name "${name}" not found.`);
+      throw new NotFoundException(`Form definition with name "${name}" not found for this user.`);
     }
     return form;
   }
 
   /**
-   * Updates an existing form definition by its ID (which serves as its name).
+   * Updates an existing form definition by its ID (which serves as its name) for a specific user.
+   * @param userId The ID of the user.
    * @param name The ID (name) of the form definition to update.
    * @param dto The DTO containing data for the update.
    * @returns The updated FormDefinition entity.
-   * @throws NotFoundException if the form definition is not found.
+   * @throws NotFoundException if the form definition is not found for the given user.
    */
-  async update(name: string, dto: UpdateFormDefinitionDto): Promise<FormDefinition> {
-    const form = await this.findOne(name); // Throws NotFoundException if not found
+  async update(userId: number, name: string, dto: UpdateFormDefinitionDto): Promise<FormDefinition> {
+    const form = await this.findOne(userId, name); // Throws NotFoundException if not found
     this.formDefinitionRepository.merge(form, dto);
-    this.logger.log(`Updating form definition: ${name}`);
+    this.logger.log(`Updating form definition: ${name} for user ${userId}`);
     return this.formDefinitionRepository.save(form);
   }
 
   /**
-   * Deletes a form definition by its ID (which serves as its name).
+   * Deletes a form definition by its ID (which serves as its name) for a specific user.
+   * @param userId The ID of the user.
    * @param name The ID (name) of the form definition to delete.
-   * @throws NotFoundException if the form definition is not found.
+   * @throws NotFoundException if the form definition is not found for the given user.
    */
-  async remove(name: string): Promise<void> {
-    const result = await this.formDefinitionRepository.delete(name);
+  async remove(userId: number, name: string): Promise<void> {
+    const result = await this.formDefinitionRepository.delete({ id: name, userId });
     if (result.affected === 0) {
-      throw new NotFoundException(`Form definition with name "${name}" not found.`);
+      throw new NotFoundException(`Form definition with name "${name}" not found for this user.`);
     }
-    this.logger.log(`Removed form definition: ${name}`);
+    this.logger.log(`Removed form definition: ${name} for user ${userId}`);
   }
 }

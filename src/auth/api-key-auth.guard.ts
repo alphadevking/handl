@@ -14,14 +14,15 @@ export class ApiKeyAuthGuard implements CanActivate {
       throw new UnauthorizedException('API Key is missing');
     }
 
-    const isValid = await this.authService.validateApiKey(apiKey);
+    const user = await this.authService.validateApiKey(apiKey);
 
-    if (!isValid) {
+    if (!user) {
       throw new UnauthorizedException('Invalid API Key');
     }
 
-    // API Key is valid, allow the flow to proceed.
-    // No user object needs to be attached to the request for this flow.
+    // Attach the user object to the request for further use in controllers/services
+    request.user = user;
+
     return true;
   }
 }

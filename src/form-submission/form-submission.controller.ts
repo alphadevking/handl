@@ -1,4 +1,5 @@
-import { Controller, Post, Body, HttpCode, HttpStatus, UseGuards, Get, Param, Delete, ParseIntPipe } from '@nestjs/common';
+import { Controller, Post, Body, HttpCode, HttpStatus, UseGuards, Get, Param, Delete, ParseIntPipe, Req } from '@nestjs/common';
+import { Request } from 'express'; // Import Request from express
 import { ApiKeyAuthGuard } from '../auth/api-key-auth.guard';
 import { FormSubmissionService } from './form-submission.service';
 import { SubmitFormDto } from './dto/submit-form.dto';
@@ -17,46 +18,49 @@ export class FormSubmissionController {
   constructor(private readonly formSubmissionService: FormSubmissionService) {}
 
   /**
-   * Handles the submission of a new form.
+   * Handles the submission of a new form for the authenticated user.
+   * @param req The request object containing the authenticated user.
    * @param submitFormDto The DTO containing the form data and definition ID.
    */
   @Post()
   @HttpCode(HttpStatus.OK) // Return 200 OK on successful submission
-  async submitForm(@Body() submitFormDto: SubmitFormDto): Promise<void> {
-    await this.formSubmissionService.handleForm(submitFormDto);
+  async submitForm(@Req() req: Request, @Body() submitFormDto: SubmitFormDto): Promise<void> {
+    const userId = req.user!.id; // Assert that req.user is not undefined
+    await this.formSubmissionService.handleForm(userId, submitFormDto);
   }
 
   /**
-   * Retrieves all form entries.
+   * Retrieves all form entries for the authenticated user.
+   * @param req The request object containing the authenticated user.
    * @returns A list of all FormEntry entities.
    */
   @Get()
-  findAll(): Promise<FormEntry[]> {
-    return this.formSubmissionService.findAll();
+  findAll(@Req() req: Request): Promise<FormEntry[]> {
+    const userId = req.user!.id; // Assert that req.user is not undefined
+    return this.formSubmissionService.findAll(userId);
   }
 
   /**
-   * Retrieves a single form entry by its ID.
-   * @param id The ID of the form entry to retrieve.
-   * @returns The FormEntry entity.
-   */
-  /**
-   * Retrieves a single form entry by its ID.
+   * Retrieves a single form entry by its ID for the authenticated user.
+   * @param req The request object containing the authenticated user.
    * @param id The ID of the form entry to retrieve.
    * @returns The FormEntry entity.
    */
   @Get(':id')
-  findOne(@Param('id', ParseIntPipe) id: number): Promise<FormEntry> {
-    return this.formSubmissionService.findOne(id);
+  findOne(@Req() req: Request, @Param('id', ParseIntPipe) id: number): Promise<FormEntry> {
+    const userId = req.user!.id; // Assert that req.user is not undefined
+    return this.formSubmissionService.findOne(userId, id);
   }
 
   /**
-   * Deletes a form entry by its ID.
+   * Deletes a form entry by its ID for the authenticated user.
+   * @param req The request object containing the authenticated user.
    * @param id The ID of the form entry to delete.
    */
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  remove(@Param('id', ParseIntPipe) id: number): Promise<void> {
-    return this.formSubmissionService.remove(id);
+  remove(@Req() req: Request, @Param('id', ParseIntPipe) id: number): Promise<void> {
+    const userId = req.user!.id; // Assert that req.user is not undefined
+    return this.formSubmissionService.remove(userId, id);
   }
 }

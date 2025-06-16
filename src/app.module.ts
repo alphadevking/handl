@@ -12,6 +12,7 @@ import { DatabaseModule } from './database/database.module';
 import { FormEntry } from './database/entities/form-entry.entity';
 import { FormDefinition } from './database/entities/form-definition.entity'; // NEW: Import this entity
 import { FormDefinitionModule } from './form-definition/form-definition.module'; // NEW: Import this module
+import { User } from './database/entities/user.entity'; // Import User entity
 
 @Module({
   imports: [
@@ -36,7 +37,7 @@ import { FormDefinitionModule } from './form-definition/form-definition.module';
         username: configService.get<string>('DATABASE_USERNAME'),
         password: configService.get<string>('DATABASE_PASSWORD'),
         database: configService.get<string>('DATABASE_NAME'),
-        entities: [FormEntry, FormDefinition], // List all your database entities here
+        entities: [FormEntry, FormDefinition, User], // List all your database entities here, including User
         synchronize: configService.get<string>('NODE_ENV') !== 'production', // Auto-create tables in dev, disable in prod
         logging: ['error'], // Log only errors from TypeORM
       }),
