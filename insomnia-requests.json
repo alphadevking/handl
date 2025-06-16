@@ -1,0 +1,335 @@
+{
+  "_type": "export",
+  "__export_format": 4,
+  "__export_date": "2023-10-27T12:00:00.000Z",
+  "__export_source": "insomnia.desktop.app:v8.x.x",
+  "resources": [
+    {
+      "_id": "req_form_definition_create",
+      "parentId": "fld_form_definitions",
+      "modified": 1678886400000,
+      "created": 1678886400000,
+      "url": "{{ _.baseUrl }}/form-definitions",
+      "name": "Create Form Definition",
+      "description": "Creates a new form definition.",
+      "method": "POST",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"id\": \"contact-us\",\n  \"schema\": {\n    \"type\": \"object\",\n    \"properties\": {\n      \"name\": { \"type\": \"string\" },\n      \"email\": { \"type\": \"string\", \"format\": \"email\" },\n      \"message\": { \"type\": \"string\" }\n    },\n    \"required\": [\"name\", \"email\", \"message\"]\n  },\n  \"description\": \"Contact Us Form Definition\"\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "X-API-KEY",
+          "value": "{{ _.apiKey }}"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1678886400000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_form_definition_get_all",
+      "parentId": "fld_form_definitions",
+      "modified": 1678886400000,
+      "created": 1678886400000,
+      "url": "{{ _.baseUrl }}/form-definitions",
+      "name": "Get All Form Definitions",
+      "description": "Retrieves all form definitions.",
+      "method": "GET",
+      "body": {},
+      "parameters": [],
+      "headers": [
+        {
+          "name": "X-API-KEY",
+          "value": "{{ _.apiKey }}"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1678886300000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_form_definition_get_by_name",
+      "parentId": "fld_form_definitions",
+      "modified": 1678886400000,
+      "created": 1678886400000,
+      "url": "{{ _.baseUrl }}/form-definitions/{{ _.formDefinitionName }}",
+      "name": "Get Form Definition by Name",
+      "description": "Retrieves a single form definition by its name (ID).",
+      "method": "GET",
+      "body": {},
+      "parameters": [],
+      "headers": [
+        {
+          "name": "X-API-KEY",
+          "value": "{{ _.apiKey }}"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1678886200000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_form_definition_update_by_name",
+      "parentId": "fld_form_definitions",
+      "modified": 1678886400000,
+      "created": 1678886400000,
+      "url": "{{ _.baseUrl }}/form-definitions/{{ _.formDefinitionName }}",
+      "name": "Update Form Definition by Name",
+      "description": "Updates an existing form definition by its name (ID).",
+      "method": "PUT",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"schema\": {\n    \"type\": \"object\",\n    \"properties\": {\n      \"updatedField\": { \"type\": \"string\" }\n    },\n    \"required\": [\"updatedField\"]\n  },\n  \"description\": \"This is an updated description for the form.\"\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "X-API-KEY",
+          "value": "{{ _.apiKey }}"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1678886100000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_form_definition_delete_by_name",
+      "parentId": "fld_form_definitions",
+      "modified": 1678886400000,
+      "created": 1678886400000,
+      "url": "{{ _.baseUrl }}/form-definitions/{{ _.formDefinitionName }}",
+      "name": "Delete Form Definition by Name",
+      "description": "Deletes a form definition by its name (ID).",
+      "method": "DELETE",
+      "body": {},
+      "parameters": [],
+      "headers": [
+        {
+          "name": "X-API-KEY",
+          "value": "{{ _.apiKey }}"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1678886000000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_form_submission_submit",
+      "parentId": "fld_form_submissions",
+      "modified": 1678886400000,
+      "created": 1678886400000,
+      "url": "{{ _.baseUrl }}/form-submissions",
+      "name": "Submit Form",
+      "description": "Submits a new form entry.",
+      "method": "POST",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"formId\": \"contact-us\",\n  \"formData\": {\n    \"name\": \"John Doe\",\n    \"email\": \"john.doe@example.com\",\n    \"message\": \"This is a test message.\"\n  }\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "X-API-KEY",
+          "value": "{{ _.apiKey }}"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1678885900000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_form_submission_get_all",
+      "parentId": "fld_form_submissions",
+      "modified": 1678886400000,
+      "created": 1678886400000,
+      "url": "{{ _.baseUrl }}/form-submissions",
+      "name": "Get All Form Submissions",
+      "description": "Retrieves all form entries.",
+      "method": "GET",
+      "body": {},
+      "parameters": [],
+      "headers": [
+        {
+          "name": "X-API-KEY",
+          "value": "{{ _.apiKey }}"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1678885800000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_form_submission_get_by_id",
+      "parentId": "fld_form_submissions",
+      "modified": 1678886400000,
+      "created": 1678886400000,
+      "url": "{{ _.baseUrl }}/form-submissions/{{ _.formEntryId }}",
+      "name": "Get Form Submission by ID",
+      "description": "Retrieves a single form entry by its ID.",
+      "method": "GET",
+      "body": {},
+      "parameters": [],
+      "headers": [
+        {
+          "name": "X-API-KEY",
+          "value": "{{ _.apiKey }}"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1678885700000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_form_submission_delete_by_id",
+      "parentId": "fld_form_submissions",
+      "modified": 1678886400000,
+      "created": 1678886400000,
+      "url": "{{ _.baseUrl }}/form-submissions/{{ _.formEntryId }}",
+      "name": "Delete Form Submission by ID",
+      "description": "Deletes a form entry by its ID.",
+      "method": "DELETE",
+      "body": {},
+      "parameters": [],
+      "headers": [
+        {
+          "name": "X-API-KEY",
+          "value": "{{ _.apiKey }}"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1678885600000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "fld_form_definitions",
+      "parentId": "wrk_main",
+      "modified": 1678886400000,
+      "created": 1678886400000,
+      "name": "Form Definitions",
+      "description": "Requests for managing form definitions.",
+      "environment": {},
+      "metaSortKey": -1678886400000,
+      "_type": "request_group"
+    },
+    {
+      "_id": "fld_form_submissions",
+      "parentId": "wrk_main",
+      "modified": 1678886400000,
+      "created": 1678886400000,
+      "name": "Form Submissions",
+      "description": "Requests for managing form submissions.",
+      "environment": {},
+      "metaSortKey": -1678885900000,
+      "_type": "request_group"
+    },
+    {
+      "_id": "env_main",
+      "parentId": "wrk_main",
+      "modified": 1678886400000,
+      "created": 1678886400000,
+      "name": "Base Environment",
+      "data": {
+        "baseUrl": "http://localhost:3000",
+        "apiKey": "YOUR_API_KEY",
+        "formDefinitionName": "contact-us",
+        "formEntryId": 1
+      },
+      "dataPropertyOrder": {
+        "baseUrl": 0,
+        "apiKey": 1,
+        "formDefinitionName": 2,
+        "formEntryId": 3
+      },
+      "color": null,
+      "is  Private": false,
+      "metaSortKey": 1678886400000,
+      "_type": "environment"
+    },
+    {
+      "_id": "wrk_main",
+      "modified": 1678886400000,
+      "created": 1678886400000,
+      "name": "Handl API",
+      "description": "Insomnia collection for the Handl API.",
+      "scope": "collection",
+      "_type": "workspace"
+    }
+  ]
+}
