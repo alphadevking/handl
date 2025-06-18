@@ -13,6 +13,7 @@ import { FormEntry } from './database/entities/form-entry.entity';
 import { FormDefinition } from './database/entities/form-definition.entity'; // NEW: Import this entity
 import { FormDefinitionModule } from './form-definition/form-definition.module'; // NEW: Import this module
 import { User } from './database/entities/user.entity'; // Import User entity
+import { Session } from './database/entities/session.entity'; // Import Session entity
 
 @Module({
   imports: [
@@ -24,7 +25,7 @@ import { User } from './database/entities/user.entity'; // Import User entity
     // Configure Throttler for rate limiting
     ThrottlerModule.forRoot([{
       ttl: 60000, // 1 minute
-      limit: 10, // 10 requests per minute
+      limit: 30, // 30 requests per minute
     }]),
     // Configure TypeORM for database connection
     TypeOrmModule.forRootAsync({
@@ -37,7 +38,7 @@ import { User } from './database/entities/user.entity'; // Import User entity
         username: configService.get<string>('DATABASE_USERNAME'),
         password: configService.get<string>('DATABASE_PASSWORD'),
         database: configService.get<string>('DATABASE_NAME'),
-        entities: [FormEntry, FormDefinition, User], // List all your database entities here, including User
+        entities: [FormEntry, FormDefinition, User, Session], // Add Session entity here
         synchronize: configService.get<string>('NODE_ENV') !== 'production', // Auto-create tables in dev, disable in prod
         logging: ['error'], // Log only errors from TypeORM
       }),

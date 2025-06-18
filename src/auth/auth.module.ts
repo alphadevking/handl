@@ -16,7 +16,7 @@ import { ApiKeyAuthGuard } from './api-key-auth.guard';
     TypeOrmModule.forFeature([User]), // Register the User entity with TypeORM
   ],
   controllers: [AuthController], // Register AuthController
-  providers: [AuthService, GoogleStrategy, AuthSerializer, ApiKeyAuthGuard], // Add GoogleStrategy, AuthSerializer, ApiKeyAuthGuard
+  providers: [AuthService, GoogleStrategy, AuthSerializer, ApiKeyAuthGuard], // Revert to standard providers
   exports: [AuthService, ApiKeyAuthGuard], // Export ApiKeyAuthGuard for use in other modules
 })
 export class AuthModule {}

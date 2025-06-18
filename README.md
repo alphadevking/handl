@@ -6,6 +6,17 @@
 
 Handl is a NestJS API service designed to provide a flexible and dynamic solution for handling various form submissions. It allows you to define different form structures (schemas) without needing code changes for each new form type. Once a form schema is defined, Handl can store the submitted data in a database and send email notifications, making it ideal for contact forms, job applications, feedback forms, and more.
 
+## Features
+
+*   **Dynamic Form Definitions:** Define and manage form schemas using JSON Schema, eliminating the need for code changes when new forms are introduced.
+*   **Secure Form Submissions:** Validate and sanitize incoming form data to prevent common web vulnerabilities like XSS.
+*   **Email Notifications:** Automatically send email notifications upon successful form submissions.
+*   **API Key Authentication:** Secure all API endpoints with robust API key-based authentication.
+*   **Rate Limiting:** Protect against abuse and denial-of-service attacks with built-in rate limiting.
+*   **Database Storage:** Persist submitted form data and definitions in a PostgreSQL database (TypeORM support).
+*   **Comprehensive API:** RESTful endpoints for managing form definitions (create, read, update, delete) and form submissions (submit, retrieve, delete).
+*   **Easy Testing:** Includes Insomnia and cURL examples for quick API testing.
+
 ## Key Technologies
 
 *   **Framework:** NestJS (with TypeScript)
@@ -16,9 +27,12 @@ Handl is a NestJS API service designed to provide a flexible and dynamic solutio
 *   **Email Sending:** `nodemailer`
 *   **Database ORM:** TypeORM (example with PostgreSQL `pg`)
 *   **API Key Authentication:** `@nestjs/passport`, `passport-headerapikey`
-*   **Input Sanitization:** `isomorphic-dompurify`
+*   **Input Sanitization:** `dompurify`, `jsdom`
 *   **Rate Limiting:** `@nestjs/throttler`
 *   **Security Headers:** `helmet`
+*   **Session Management:** `express-session`, `connect-typeorm`
+*   **Authentication Strategies:** `passport`, `passport-google-oauth20`
+*   **Utilities:** `reflect-metadata`, `rxjs`, `uuid`
 
 ## Security Enhancements
 
@@ -63,6 +77,8 @@ Create a `.env` file in the project root by copying and renaming `.env.example`.
 ### Database Setup
 
 This application uses TypeORM. In development, `synchronize: true` is enabled in `src/app.module.ts` to automatically create tables based on your entities (`FormEntry` and `FormDefinition`). For production environments, it is highly recommended to disable `synchronize` and use database migrations for schema management.
+
+**Note on Migrations:** For production deployments, you should generate and run TypeORM migrations to manage your database schema. This ensures controlled schema evolution and prevents data loss. Refer to the TypeORM documentation for detailed migration instructions.
 
 ## Running the Application
 
@@ -301,6 +317,26 @@ An Insomnia requests file (`insomnia-requests.json`) is provided at the project 
 1.  **Import:** In Insomnia, go to `File` > `Import` > `From File` and select `insomnia-requests.json`.
 2.  **Environment:** Select the "Base Environment" from the environment dropdown. Update the `apiKey` variable with your actual API key. You can also set `formDefinitionName` and `formEntryId` for convenience.
 3.  **Send Requests:** Navigate through the "Form Definitions" and "Form Submissions" folders and send requests.
+
+## Contributing
+
+We welcome contributions to Handl! If you'd like to contribute, please follow these steps:
+
+1.  **Fork the repository.**
+2.  **Create a new branch** for your feature or bug fix: `git checkout -b feature/your-feature-name` or `bugfix/your-bug-fix`.
+3.  **Make your changes** and ensure they adhere to the project's coding standards.
+4.  **Write tests** for your changes, if applicable.
+5.  **Run tests** to ensure everything is working as expected: `pnpm test`.
+6.  **Commit your changes** with a clear and concise commit message.
+7.  **Push your branch** to your forked repository.
+8.  **Open a Pull Request** to the `main` branch of the original repository, describing your changes in detail.
+
+## Support
+
+If you have any questions, issues, or suggestions, please feel free to:
+
+*   **Open an issue** on the GitHub repository.
+*   **Contact the maintainer** at [alphadevking@gmail.com](mailto:alphadevking@gmail.com).
 
 ## License
 

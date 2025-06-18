@@ -27,8 +27,12 @@ export class AuthSerializer extends PassportSerializer {
     payload: number,
     done: (err: Error | null, user: User | null) => void,
   ): Promise<void> {
-    // Use the public method from AuthService to find the user
-    const user = await this.authService.findUserById(payload);
-    done(null, user);
+    try {
+      // Use the public method from AuthService to find the user
+      const user = await this.authService.findUserById(payload);
+      done(null, user);
+    } catch (error) {
+      done(error, null);
+    }
   }
 }

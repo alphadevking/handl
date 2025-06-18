@@ -5,22 +5,44 @@ import { ConfigService } from '@nestjs/config';
 import helmet from 'helmet'; // Import helmet
 import * as session from 'express-session'; // Import express-session
 import * as passport from 'passport'; // Import passport
+import { TypeormStore } from 'connect-typeorm'; // Import TypeormStore
+import { DataSource } from 'typeorm'; // Import DataSource
+import { Session } from './database/entities/session.entity'; // Import Session entity
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.use(helmet()); // Apply helmet for security headers
   const configService = app.get(ConfigService); // Get ConfigService instance
+  const dataSource = app.get(DataSource); // Get the TypeORM DataSource
 
-  // Configure express-session
+  // Ensure DataSource is initialized before connecting TypeormStore
+  if (!dataSource.isInitialized) {
+    console.log('DataSource not initialized, attempting to initialize...');
+    await dataSource.initialize();
+    console.log('DataSource initialized.');
+  }
+
+  // Configure express-session with TypeORM store
   app.use(
     session({
       secret: configService.get<string>('SESSION_SECRET') || 'supersecret', // Use a strong secret from environment variables
       resave: false,
       saveUninitialized: false,
+      store: new TypeormStore({
+        cleanupLimit: 2, // Number of expired sessions to clean up
+        limitSubquery: false, // If using MySQL, set to true
+        ttl: 3600000, // Session TTL in milliseconds (1 hour)
+      }).connect(dataSource.getRepository(Session)), // Connect to the Session entity repository
       cookie: {
         maxAge: 3600000, // 1 hour
         httpOnly: true,
-        secure: process.env.NODE_ENV === 'production', // Use secure cookies in production
+        // For local development (HTTP), secure should be false.
+        // For production (HTTPS), secure should be true.
+        secure: process.env.NODE_ENV === 'production',
+        // Set SameSite to 'Lax' for development (default, but explicit)
+        // For cross-site requests in production (e.g., separate frontend domain),
+        // it should be 'None' and 'secure' must be true.
+        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
       },
     }),
   );
@@ -55,6 +77,6 @@ async function bootstrap() {
   // 3. Start the application
   const port = configService.get<number>('PORT') || 3000;
   await app.listen(port);
-  console.log(`Handl application running on port ${port}`);
+  console.log(`Handl now running on port ${port}`);
 }
 bootstrap();

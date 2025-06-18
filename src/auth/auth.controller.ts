@@ -4,13 +4,14 @@ import { Request, Response } from 'express';
 import { AuthService } from './auth.service';
 import { User } from '../database/entities/user.entity';
 import { ConfigService } from '@nestjs/config'; // Import ConfigService
+import { Session } from 'express-session';
 
 @Controller('auth')
 export class AuthController {
   constructor(
     private authService: AuthService,
     private configService: ConfigService, // Inject ConfigService
-  ) {}
+  ) { }
 
   /**
    * Initiates the Google OAuth login process.
@@ -37,7 +38,17 @@ export class AuthController {
     // Passport will attach the user to req.user after successful authentication
     const user = req.user as User;
     if (user) {
-      // User is authenticated, redirect to frontend success URL with user ID
+      // User is authenticated, explicitly log in the user to establish a session
+      await new Promise<void>((resolve, reject) => {
+        req.login(user, (err) => {
+          if (err) {
+            return reject(err);
+          }
+          resolve();
+        });
+      });
+
+      // Redirect to frontend success URL with user ID
       const successRedirectUrl = this.configService.get<string>('FRONTEND_AUTH_SUCCESS_REDIRECT') || 'http://localhost:5173/dashboard';
       res.redirect(`${successRedirectUrl}?userId=${user.id}`);
     } else {
@@ -46,16 +57,6 @@ export class AuthController {
       res.redirect(failureRedirectUrl);
     }
   }
-
-  /**
-   * Provides a success page after Google OAuth.
-   * In a real application, this would be a frontend route.
-   * @param req The request object.
-   * @returns A success message and user details.
-   */
-  // The /auth/success and /auth/failure routes are now handled by frontend redirects.
-  // These endpoints are no longer directly hit by the browser after OAuth.
-  // Keeping them as examples or for direct API testing if needed, but they won't be part of the OAuth flow.
 
   /**
    * Provides a success page after Google OAuth.
@@ -84,28 +85,65 @@ export class AuthController {
 
   /**
    * Checks the current authentication status of the user.
+   * This endpoint requires an active session to return the authenticated user.
    * @param req The request object.
    * @returns The authenticated user object or null if not authenticated.
    */
   @Get('status')
+  // @UseGuards(AuthGuard('session')) // Keep AuthGuard commented out as it seems to be the issue
   @HttpCode(HttpStatus.OK)
-  authStatus(@Req() req: Request) {
-    return req.user || null;
+  async authStatus(@Req() req: Request) {
+    // --- OLD IMPLEMENTATION (v1) ---
+    // try {
+    //   const user = req.user || null;
+    //   return {
+    //     isAuthenticated: !!user,
+    //     user: user ? { id: user.id, email: user.email, firstName: user.firstName } : null,
+    //   };
+    // } catch (error) {
+    //   throw new InternalServerErrorException('Failed to check authentication status.');
+    // }
+    // --- NEW IMPLEMENTATION (v1) ---
+    // console.log('AuthController: /auth/status endpoint hit (without AuthGuard)');
+    // console.log('Initial req.isAuthenticated():', req.isAuthenticated());
+    // console.log('Initial req.user:', req.user);
+
+    let user = req.user as User | null; // Ensure user is User | null
+
+    // Manually check session for Passport user ID if req.user is not populated
+    const sessionWithPassport = req.session as Session as any; // Cast to any to bypass TypeScript error
+    if (!user && sessionWithPassport && sessionWithPassport.passport && sessionWithPassport.passport.user) {
+      console.log('Found user ID in session.passport.user:', sessionWithPassport.passport.user);
+      try {
+        // Attempt to deserialize the user manually
+        user = await this.authService.findUserById(sessionWithPassport.passport.user);
+        if (user) {
+          // Manually attach user to request for this context
+          req.user = user;
+          console.log('Manually populated req.user:', user.id);
+        } else {
+          console.log('User not found for ID from session:', sessionWithPassport.passport.user);
+        }
+      } catch (error) {
+        console.error('Error manually deserializing user:', error);
+      }
+    }
+
+    // console.log('Final req.isAuthenticated():', req.isAuthenticated());
+    // console.log('Final req.user:', req.user);
+
+    try {
+      const isAuthenticated = !!user;
+      return {
+        isAuthenticated: isAuthenticated,
+        user: user ? { id: user.id, email: user.email, firstName: user.firstName, apiKey: user.apiKey } : null,
+      };
+    } catch (error) {
+      console.error('Error in authStatus:', error);
+      throw new InternalServerErrorException('Failed to check authentication status.');
+    }
   }
 
-  /**
-   * Logs out the current user.
-   * @param req The request object.
-   * @param res The response object for redirection.
-   * @returns Redirects to the login page or sends a logout success message.
-   */
-  /**
-   * Logs out the current user.
-   * @param req The request object.
-   * @param res The response object for redirection.
-   * @returns Redirects to the login page or sends a logout success message.
-   * @throws InternalServerErrorException if logout or session destruction fails.
-   */
   /**
    * Logs out the current user.
    * @param req The request object.

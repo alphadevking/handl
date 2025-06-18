@@ -2,7 +2,8 @@ import { Injectable, Logger, InternalServerErrorException } from '@nestjs/common
 import { ConfigService } from '@nestjs/config';
 import * as nodemailer from 'nodemailer';
 import Mail from 'nodemailer/lib/mailer';
-import DOMPurify from 'isomorphic-dompurify'; // Import isomorphic-dompurify
+import * as DOMPurify from 'dompurify'; // Import dompurify
+import { JSDOM } from 'jsdom'; // Import JSDOM
 
 @Injectable()
 export class EmailService {
@@ -10,8 +11,13 @@ export class EmailService {
   private readonly logger = new Logger(EmailService.name);
   private readonly emailReceiver: string;
   private readonly emailUser: string;
+  private domPurify: any; // Declare domPurify instance
 
   constructor(private configService: ConfigService) {
+    // Initialize JSDOM and DOMPurify for server-side sanitization
+    const window = new JSDOM('').window;
+    this.domPurify = DOMPurify(window);
+
     this.emailUser = this.configService.get<string>('EMAIL_USER')!;
     this.emailReceiver = this.configService.get<string>('EMAIL_RECEIVER')!;
 
@@ -37,15 +43,25 @@ export class EmailService {
       return;
     }
 
+    // --- NEW IMPLEMENTATION (v1) ---
+    // Modernized HTML email template for form submissions
     let htmlBody = `
-          <div style="font-family: Arial, sans-serif; line-height: 1.6;">
-            <h2>New Submission for Form: "${formId}"</h2>
-            <p>Details:</p>
-            <div style="border: 1px solid #eee; padding: 10px; background-color: #f9f9f9;">
-              <table style="width: 100%; border-collapse: collapse;">
+          <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.8; color: #333; background-color: #f4f7f6; padding: 20px; border-radius: 8px; max-width: 600px; margin: 20px auto; box-shadow: 0 4px 12px rgba(0,0,0,0.08);">
+            <h2 style="color: #2c3e50; text-align: center; margin-bottom: 25px; font-size: 24px;">Handl Alert 📩</h2>
+            <div style="background-color: #ffffff; padding: 25px; border-radius: 8px; border: 1px solid #e0e0e0; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+              <h3 style="color: #34495e; margin-top: 0; font-size: 20px;">Form: "${formId}"</h3>
+              <p style="font-size: 15px; color: #555;">Here goes:</p>
+              <table style="width: 100%; border-collapse: separate; border-spacing: 0; margin-top: 20px; border-radius: 8px; overflow: hidden;">
+                <thead style="background-color: #e9ecef;">
+                  <tr>
+                    <th style="padding: 12px 15px; text-align: left; color: #495057; font-size: 14px; border-bottom: 1px solid #dee2e6;">Field</th>
+                    <th style="padding: 12px 15px; text-align: left; color: #495057; font-size: 14px; border-bottom: 1px solid #dee2e6;">Value</th>
+                  </tr>
+                </thead>
+                <tbody>
         `;
 
-    let textBody = `New Submission for Form: "${formId}"\n\nDetails:\n`;
+    let textBody = `"${formId}"\n\nDetails:\n`;
 
     for (const key in formData) {
       if (Object.prototype.hasOwnProperty.call(formData, key)) {
@@ -55,14 +71,14 @@ export class EmailService {
           : String(value);
 
         // Sanitize displayValue to prevent XSS in HTML email
-        displayValue = DOMPurify.sanitize(displayValue);
+        displayValue = this.domPurify.sanitize(displayValue);
 
         htmlBody += `
                 <tr>
-                  <td style="padding: 8px; border: 1px solid #ddd; font-weight: bold; width: 30%;">
+                  <td style="padding: 12px 15px; border-bottom: 1px solid #f0f0f0; font-weight: 600; color: #495057; width: 30%;">
                     ${key.charAt(0).toUpperCase() + key.slice(1).replace(/([A-Z])/g, ' $1').trim()}:
                   </td>
-                  <td style="padding: 8px; border: 1px solid #ddd;">${displayValue}</td>
+                  <td style="padding: 12px 15px; border-bottom: 1px solid #f0f0f0; color: #6c757d;">${displayValue}</td>
                 </tr>
             `;
         textBody += `  ${key.charAt(0).toUpperCase() + key.slice(1).replace(/([A-Z])/g, ' $1').trim()}: ${displayValue}\n`;
@@ -70,9 +86,10 @@ export class EmailService {
     }
 
     htmlBody += `
+                </tbody>
               </table>
             </div>
-            <p style="font-size: 0.8em; color: #777; margin-top: 20px;">
+            <p style="font-size: 13px; color: #999; text-align: center; margin-top: 30px;">
               This email was sent automatically by your Handl application.
             </p>
           </div>
@@ -83,7 +100,7 @@ export class EmailService {
     const mailOptions = {
       from: `"Handl Form" <${this.emailUser}>`,
       to: this.emailReceiver,
-      subject: `New Handl Form Submission: ${formId}`,
+      subject: `Handl Alert for Form: ${formId}`,
       html: htmlBody,
       text: textBody,
     };
