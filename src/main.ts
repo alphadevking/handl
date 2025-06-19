@@ -3,8 +3,8 @@ import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import helmet from 'helmet'; // Import helmet
-import * as session from 'express-session'; // Import express-session
-import * as passport from 'passport'; // Import passport
+import session from 'express-session'; // Import express-session
+import passport from 'passport'; // Import passport
 
 export async function bootstrap() {
   const app = await NestFactory.create(AppModule);

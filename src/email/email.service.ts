@@ -2,7 +2,7 @@ import { Injectable, Logger, InternalServerErrorException } from '@nestjs/common
 import { ConfigService } from '@nestjs/config';
 import * as nodemailer from 'nodemailer';
 import Mail from 'nodemailer/lib/mailer';
-import * as DOMPurify from 'dompurify';
+import DOMPurify from 'dompurify';
 import { JSDOM } from 'jsdom'; // Import JSDOM
 
 @Injectable()
@@ -16,7 +16,7 @@ export class EmailService {
   constructor(private configService: ConfigService) {
     // Initialize JSDOM and DOMPurify for server-side sanitization
     const window = new JSDOM('').window;
-    this.domPurify = DOMPurify(window);
+    this.domPurify = DOMPurify(window as any);
 
     this.emailUser = this.configService.get<string>('EMAIL_USER')!;
     this.emailReceiver = this.configService.get<string>('EMAIL_RECEIVER')!;

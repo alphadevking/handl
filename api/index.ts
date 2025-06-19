@@ -5,8 +5,8 @@ import { AppModule } from '../src/app.module';
 import { ConfigService } from '@nestjs/config';
 import { ValidationPipe } from '@nestjs/common';
 import helmet from 'helmet';
-import * as session from 'express-session'; // Import express-session
-import * as passport from 'passport'; // Import passport
+import session from 'express-session'; // Import express-session
+import passport from 'passport'; // Import passport
 
 let cachedServer: any = null;
 
