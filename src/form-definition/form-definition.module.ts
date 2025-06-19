@@ -1,13 +1,13 @@
 import { Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
+import { MongooseModule } from '@nestjs/mongoose';
 import { FormDefinitionController } from './form-definition.controller';
 import { FormDefinitionService } from './form-definition.service';
-import { FormDefinition } from '../database/entities/form-definition.entity';
+import { FormDefinition, FormDefinitionSchema } from '../database/schemas/form-definition.schema';
 import { AuthModule } from '../auth/auth.module'; // Import AuthModule
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([FormDefinition]),
+    MongooseModule.forFeature([{ name: FormDefinition.name, schema: FormDefinitionSchema }]),
     AuthModule,
   ],
   controllers: [FormDefinitionController],

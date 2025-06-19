@@ -12,4 +12,12 @@ export class CreateFormDefinitionDto {
   @IsOptional()
   @IsString()
   description?: string;
+
+  @IsOptional()
+  @IsObject()
+  json_fields?: object;
+
+  @IsOptional()
+  @IsObject()
+  metadata?: object;
 }

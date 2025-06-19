@@ -1,10 +1,20 @@
 import { Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
+import { MongooseModule } from '@nestjs/mongoose';
 import { DatabaseService } from './database.service';
-import { FormEntry } from './entities/form-entry.entity';
+import { FormEntry, FormEntrySchema } from './schemas/form-entry.schema';
+import { FormDefinition, FormDefinitionSchema } from './schemas/form-definition.schema';
+import { User, UserSchema } from './schemas/user.schema';
+import { Session, SessionSchema } from './schemas/session.schema';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([FormEntry])],
+  imports: [
+    MongooseModule.forFeature([
+      { name: FormEntry.name, schema: FormEntrySchema },
+      { name: FormDefinition.name, schema: FormDefinitionSchema },
+      { name: User.name, schema: UserSchema },
+      { name: Session.name, schema: SessionSchema },
+    ]),
+  ],
   providers: [DatabaseService],
   exports: [DatabaseService], // Export if other modules need to save form entries
 })

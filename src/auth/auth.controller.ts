@@ -2,7 +2,8 @@ import { Controller, Get, Req, Res, UseGuards, HttpCode, HttpStatus, InternalSer
 import { AuthGuard } from '@nestjs/passport';
 import { Request, Response } from 'express';
 import { AuthService } from './auth.service';
-import { User } from '../database/entities/user.entity';
+import { User } from '../database/schemas/user.schema';
+import { Types } from 'mongoose';
 import { ConfigService } from '@nestjs/config'; // Import ConfigService
 import { Session } from 'express-session';
 
@@ -36,7 +37,7 @@ export class AuthController {
   @UseGuards(AuthGuard('google'))
   async googleAuthCallback(@Req() req: Request, @Res() res: Response) {
     // Passport will attach the user to req.user after successful authentication
-    const user = req.user as User;
+    const user = req.user as User & { _id: Types.ObjectId };
     if (user) {
       // User is authenticated, explicitly log in the user to establish a session
       await new Promise<void>((resolve, reject) => {
@@ -50,7 +51,7 @@ export class AuthController {
 
       // Redirect to frontend success URL with user ID
       const successRedirectUrl = this.configService.get<string>('FRONTEND_AUTH_SUCCESS_REDIRECT') || 'http://localhost:5173/dashboard';
-      res.redirect(`${successRedirectUrl}?userId=${user.id}`);
+      res.redirect(`${successRedirectUrl}?userId=${user._id.toString()}`);
     } else {
       // Authentication failed, redirect to frontend failure URL
       const failureRedirectUrl = this.configService.get<string>('FRONTEND_AUTH_FAILURE_REDIRECT') || 'http://localhost:5173/login';
@@ -108,7 +109,7 @@ export class AuthController {
     // console.log('Initial req.isAuthenticated():', req.isAuthenticated());
     // console.log('Initial req.user:', req.user);
 
-    let user = req.user as User | null; // Ensure user is User | null
+    let user = req.user as (User & { _id: Types.ObjectId }) | null; // Ensure user is User | null
 
     // Manually check session for Passport user ID if req.user is not populated
     const sessionWithPassport = req.session as Session as any; // Cast to any to bypass TypeScript error
@@ -120,7 +121,7 @@ export class AuthController {
         if (user) {
           // Manually attach user to request for this context
           req.user = user;
-          console.log('Manually populated req.user:', user.id);
+          console.log('Manually populated req.user:', user._id.toString());
         } else {
           console.log('User not found for ID from session:', sessionWithPassport.passport.user);
         }
@@ -136,7 +137,7 @@ export class AuthController {
       const isAuthenticated = !!user;
       return {
         isAuthenticated: isAuthenticated,
-        user: user ? { id: user.id, email: user.email, firstName: user.firstName, apiKey: user.apiKey } : null,
+        user: user ? { id: user._id.toString(), email: user.email, firstName: user.firstName, apiKey: user.apiKey } : null,
       };
     } catch (error) {
       console.error('Error in authStatus:', error);

@@ -43,7 +43,6 @@ export class EmailService {
       return;
     }
 
-    // --- NEW IMPLEMENTATION (v1) ---
     // Modernized HTML email template for form submissions
     let htmlBody = `
           <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.8; color: #333; background-color: #f4f7f6; padding: 20px; border-radius: 8px; max-width: 600px; margin: 20px auto; box-shadow: 0 4px 12px rgba(0,0,0,0.08);">
@@ -98,17 +97,20 @@ export class EmailService {
 
 
     const mailOptions = {
-      from: `"Handl Form" <${this.emailUser}>`,
+      from: `"Handl Form Alert🔔"`,
       to: this.emailReceiver,
-      subject: `Handl Alert for Form: ${formId}`,
+      subject: `A new message from ${formId}`,
       html: htmlBody,
       text: textBody,
     };
 
     try {
       const info = await this.transporter.sendMail(mailOptions);
+      // const info = {
+      //   messageId: 'testing sent email',
+      // };
       this.logger.log(`Email sent successfully for form ${formId}: ${info.messageId}`);
-      this.logger.debug(`Preview URL: ${nodemailer.getTestMessageUrl(info)}`);
+      // this.logger.debug(`Preview URL: ${nodemailer.getTestMessageUrl(info)}`);
     } catch (error) {
       this.logger.error(`Failed to send email notification for form ${formId}:`, error.message, error.stack);
       throw new InternalServerErrorException('Failed to send email notification.');

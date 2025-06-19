@@ -1,6 +1,5 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { FormSubmissionModule } from './form-submission/form-submission.module';
@@ -8,12 +7,9 @@ import { EmailModule } from './email/email.module';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
 import { AuthModule } from './auth/auth.module';
+import { FormDefinitionModule } from './form-definition/form-definition.module';
+import { MongooseModule } from '@nestjs/mongoose';
 import { DatabaseModule } from './database/database.module';
-import { FormEntry } from './database/entities/form-entry.entity';
-import { FormDefinition } from './database/entities/form-definition.entity'; // NEW: Import this entity
-import { FormDefinitionModule } from './form-definition/form-definition.module'; // NEW: Import this module
-import { User } from './database/entities/user.entity'; // Import User entity
-import { Session } from './database/entities/session.entity'; // Import Session entity
 
 @Module({
   imports: [
@@ -27,28 +23,20 @@ import { Session } from './database/entities/session.entity'; // Import Session 
       ttl: 60000, // 1 minute
       limit: 30, // 30 requests per minute
     }]),
-    // Configure TypeORM for database connection
-    TypeOrmModule.forRootAsync({
+    // Configure Mongoose for database connection
+    MongooseModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
-        type: configService.get<any>('DATABASE_TYPE'),
-        host: configService.get<string>('DATABASE_HOST'),
-        port: configService.get<number>('DATABASE_PORT'),
-        username: configService.get<string>('DATABASE_USERNAME'),
-        password: configService.get<string>('DATABASE_PASSWORD'),
-        database: configService.get<string>('DATABASE_NAME'),
-        entities: [FormEntry, FormDefinition, User, Session], // Add Session entity here
-        synchronize: configService.get<string>('NODE_ENV') !== 'production', // Auto-create tables in dev, disable in prod
-        logging: ['error'], // Log only errors from TypeORM
+        uri: configService.get<string>('MONGODB_URI'),
       }),
     }),
     // Feature modules
     FormSubmissionModule,
     EmailModule,
-    DatabaseModule,
     FormDefinitionModule,
-    AuthModule, // Add AuthModule here
+    AuthModule,
+    DatabaseModule,
   ],
   controllers: [AppController],
   providers: [

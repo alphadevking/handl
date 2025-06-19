@@ -1,6 +1,8 @@
 import { Injectable, CanActivate, ExecutionContext, UnauthorizedException } from '@nestjs/common';
 import { Request } from 'express';
 import { AuthService } from './auth.service';
+import { User } from '../database/schemas/user.schema';
+import { Document } from 'mongoose';
 
 @Injectable()
 export class ApiKeyAuthGuard implements CanActivate {
@@ -21,7 +23,8 @@ export class ApiKeyAuthGuard implements CanActivate {
     }
 
     // Attach the user object to the request for further use in controllers/services
-    request.user = user;
+    // Explicitly cast to ensure TypeScript recognizes it as a Mongoose Document
+    request.user = user as User & Document;
 
     return true;
   }

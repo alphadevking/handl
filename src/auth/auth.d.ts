@@ -1,16 +1,20 @@
-import { User } from '../database/entities/user.entity';
+import { User } from '../database/schemas/user.schema';
+import { Document, Types } from 'mongoose';
 
 declare global {
   namespace Express {
+    // Extend the User interface to include Mongoose Document properties
+    interface User extends User, Document<Types.ObjectId> {}
+
     interface Request {
-      user: User | null; // Change to User | null
-      login(user: User, done: (err: any) => void): void; // Add login method
+      user: User | null;
+      login(user: User, done: (err: any) => void): void;
       logout(done: (err: any) => void): void;
-      isAuthenticated(): boolean; // Add isAuthenticated method
+      isAuthenticated(): boolean;
       session: {
         destroy(callback: (err: any) => void): void;
-        passport?: { user: number }; // Add passport property to session
+        passport?: { user: string }; // Change to string for Mongoose _id
       };
     }
-    }
   }
+}

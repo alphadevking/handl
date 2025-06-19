@@ -1,7 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { PassportSerializer } from '@nestjs/passport';
 import { AuthService } from './auth.service';
-import { User } from '../database/entities/user.entity';
+import { User } from '../database/schemas/user.schema';
+import { Types } from 'mongoose';
 
 @Injectable()
 export class AuthSerializer extends PassportSerializer {
@@ -14,8 +15,8 @@ export class AuthSerializer extends PassportSerializer {
    * @param user The user object to serialize.
    * @param done The callback function to call after serialization.
    */
-  serializeUser(user: User, done: (err: Error | null, id: number) => void): void {
-    done(null, user.id);
+  serializeUser(user: User, done: (err: Error | null, id: string) => void): void {
+    done(null, user._id.toString());
   }
 
   /**
@@ -24,7 +25,7 @@ export class AuthSerializer extends PassportSerializer {
    * @param done The callback function to call after deserialization.
    */
   async deserializeUser(
-    payload: number,
+    payload: string,
     done: (err: Error | null, user: User | null) => void,
   ): Promise<void> {
     try {

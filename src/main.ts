@@ -5,34 +5,21 @@ import { ConfigService } from '@nestjs/config';
 import helmet from 'helmet'; // Import helmet
 import * as session from 'express-session'; // Import express-session
 import * as passport from 'passport'; // Import passport
-import { TypeormStore } from 'connect-typeorm'; // Import TypeormStore
-import { DataSource } from 'typeorm'; // Import DataSource
-import { Session } from './database/entities/session.entity'; // Import Session entity
+import { getConnectionToken } from '@nestjs/mongoose'; // Import getConnectionToken
+import { Connection } from 'mongoose'; // Import Connection from mongoose
+// Will import custom Mongoose session store here
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.use(helmet()); // Apply helmet for security headers
   const configService = app.get(ConfigService); // Get ConfigService instance
-  const dataSource = app.get(DataSource); // Get the TypeORM DataSource
 
-  // Ensure DataSource is initialized before connecting TypeormStore
-  if (!dataSource.isInitialized) {
-    console.log('DataSource not initialized, attempting to initialize...');
-    await dataSource.initialize();
-    console.log('DataSource initialized.');
-  }
-
-  // Configure express-session with TypeORM store
+  // Configure express-session with Mongoose store
   app.use(
     session({
       secret: configService.get<string>('SESSION_SECRET') || 'supersecret', // Use a strong secret from environment variables
       resave: false,
       saveUninitialized: false,
-      store: new TypeormStore({
-        cleanupLimit: 2, // Number of expired sessions to clean up
-        limitSubquery: false, // If using MySQL, set to true
-        ttl: 3600000, // Session TTL in milliseconds (1 hour)
-      }).connect(dataSource.getRepository(Session)), // Connect to the Session entity repository
       cookie: {
         maxAge: 3600000, // 1 hour
         httpOnly: true,
