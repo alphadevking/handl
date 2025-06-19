@@ -5,9 +5,6 @@ import { ConfigService } from '@nestjs/config';
 import helmet from 'helmet'; // Import helmet
 import * as session from 'express-session'; // Import express-session
 import * as passport from 'passport'; // Import passport
-import { getConnectionToken } from '@nestjs/mongoose'; // Import getConnectionToken
-import { Connection } from 'mongoose'; // Import Connection from mongoose
-// Will import custom Mongoose session store here
 
 export async function bootstrap() {
   const app = await NestFactory.create(AppModule);
