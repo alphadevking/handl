@@ -2,7 +2,7 @@ import { Injectable, Logger, InternalServerErrorException } from '@nestjs/common
 import { ConfigService } from '@nestjs/config';
 import * as nodemailer from 'nodemailer';
 import Mail from 'nodemailer/lib/mailer';
-import * as DOMPurify from 'dompurify'; // Import dompurify
+import DOMPurify from 'dompurify';
 import { JSDOM } from 'jsdom'; // Import JSDOM
 
 @Injectable()
