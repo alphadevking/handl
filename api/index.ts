@@ -1,6 +1,6 @@
 // api/index.ts
 import { Handler } from 'express';
-import { bootstrap } from 'src/main';
+import { bootstrap } from '../src/main';
 
 const handler: Handler = async (req, res) => {
   const server = await bootstrap();
