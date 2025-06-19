@@ -49,13 +49,11 @@ export class AuthController {
         });
       });
 
-      // Redirect to frontend success URL with user ID
-      const successRedirectUrl = this.configService.get<string>('FRONTEND_AUTH_SUCCESS_REDIRECT') || 'http://localhost:5173/dashboard';
-      res.redirect(`${successRedirectUrl}?userId=${user._id.toString()}`);
+      // Redirect to the frontend OAuth callback route with success status
+      res.redirect(`${this.configService.get('FRONTEND_AUTH_SUCCESS_REDIRECT')}/auth/oauth-callback?success=true&userId=${user._id.toString()}`);
     } else {
-      // Authentication failed, redirect to frontend failure URL
-      const failureRedirectUrl = this.configService.get<string>('FRONTEND_AUTH_FAILURE_REDIRECT') || 'http://localhost:5173/login';
-      res.redirect(failureRedirectUrl);
+      // Authentication failed, redirect to the frontend OAuth callback route with failure status
+      res.redirect(`${this.configService.get('FRONTEND_AUTH_FAILURE_REDIRECT')}/auth/oauth-callback?success=false&message=Authentication failed.`);
     }
   }
 
@@ -154,7 +152,7 @@ export class AuthController {
    */
   @Get('logout')
   @HttpCode(HttpStatus.OK)
-  async logout(@Req() req: Request, @Res() res: Response) {
+  async logout(@Req() req: Request, @Res() res: Response) { // Re-added @Res() res: Response
     try {
       await new Promise<void>((resolve, reject) => {
         req.logout((err) => {
