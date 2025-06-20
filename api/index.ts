@@ -7,6 +7,7 @@ import { ValidationPipe } from '@nestjs/common';
 import helmet from 'helmet';
 import session from 'express-session'; // Import express-session
 import passport from 'passport'; // Import passport
+import MongoDBStore from 'connect-mongodb-session'; // Import MongoDB session store
 
 let cachedServer: any = null;
 
@@ -19,12 +20,32 @@ async function bootstrapServer() {
     app.use(helmet());
     const configService = app.get(ConfigService); // Get ConfigService instance
 
-    // Configure express-session with Mongoose store
+    // Configure MongoDB session store
+    const MongoDBSessionStore = MongoDBStore(session);
+    const mongoUri = configService.get<string>('MONGODB_URI');
+    if (!mongoUri) {
+      throw new Error('MONGODB_URI environment variable is not set');
+    }
+
+    const store = new MongoDBSessionStore({
+      uri: mongoUri,
+      collection: 'sessions',
+      expires: 3600000, // 1 hour (in milliseconds)
+      // MongoDB driver now uses these options by default, no need to specify them
+    });
+
+    // Handle store errors
+    store.on('error', (error) => {
+      console.error('MongoDB session store error:', error);
+    });
+
+    // Configure express-session with MongoDB store
     app.use(
       session({
         secret: configService.get<string>('SESSION_SECRET') || 'supersecret', // Use a strong secret from environment variables
         resave: false,
         saveUninitialized: false,
+        store: store, // Use MongoDB store instead of default MemoryStore
         cookie: {
           maxAge: 3600000, // 1 hour
           httpOnly: true,
