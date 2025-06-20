@@ -133,6 +133,8 @@ export class AuthController {
 
     try {
       const isAuthenticated = !!user;
+      console.log('isAuthenticated:', isAuthenticated);
+      console.log('user:', user);
       return {
         isAuthenticated: isAuthenticated,
         user: user ? { id: user._id.toString(), email: user.email, firstName: user.firstName, apiKey: user.apiKey } : null,
