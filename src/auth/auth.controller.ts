@@ -49,11 +49,11 @@ export class AuthController {
         });
       });
 
-      // Redirect to the frontend OAuth callback route with success status
-      res.redirect(`${this.configService.get('FRONTEND_AUTH_SUCCESS_REDIRECT')}/auth/oauth-callback?success=true&userId=${user._id.toString()}`);
+      // Redirect to the frontend OAuth callback route with success status using path parameters
+      res.redirect(`${this.configService.get('FRONTEND_AUTH_SUCCESS_REDIRECT')}/success/${user._id.toString()}`);
     } else {
-      // Authentication failed, redirect to the frontend OAuth callback route with failure status
-      res.redirect(`${this.configService.get('FRONTEND_AUTH_FAILURE_REDIRECT')}/auth/oauth-callback?success=false&message=Authentication failed.`);
+      // Authentication failed, redirect to the frontend OAuth callback route with failure status using path parameters
+      res.redirect(`${this.configService.get('FRONTEND_AUTH_FAILURE_REDIRECT')}/failure/authentication-failed`);
     }
   }
 
