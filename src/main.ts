@@ -21,9 +21,8 @@ export async function bootstrap() {
 
   const store = new MongoDBSessionStore({
     uri: mongoUri,
-    collection: 'sessions',
+    collection: 'express_sessions', // Use a different collection name to avoid conflicts
     expires: 3600000, // 1 hour (in milliseconds)
-    // MongoDB driver now uses these options by default, no need to specify them
   });
 
   // Handle store errors

@@ -3,7 +3,7 @@ import { Document } from 'mongoose';
 
 @Schema()
 export class Session extends Document {
-  @Prop({ required: true, index: true })
+  @Prop({ required: true })
   expires: Date; // The expiration date of the session
 
   @Prop({ required: true })
