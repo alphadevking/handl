@@ -5,9 +5,10 @@ import { AppModule } from '../src/app.module';
 import { ConfigService } from '@nestjs/config';
 import { ValidationPipe } from '@nestjs/common';
 import helmet from 'helmet';
-import session from 'express-session'; // Import express-session
 import passport from 'passport'; // Import passport
-import MongoDBStore from 'connect-mongodb-session'; // Import MongoDB session store
+import cookieParser from 'cookie-parser'; // Import cookie-parser
+import session from 'express-session'; // Import express-session
+import { jwtConstants } from '../src/auth/constants'; // Import jwtConstants
 
 let cachedServer: any = null;
 
@@ -20,40 +21,19 @@ async function bootstrapServer() {
     app.use(helmet());
     const configService = app.get(ConfigService); // Get ConfigService instance
 
-    // Configure MongoDB session store
-    const MongoDBSessionStore = MongoDBStore(session);
-    const mongoUri = configService.get<string>('MONGODB_URI');
-    if (!mongoUri) {
-      throw new Error('MONGODB_URI environment variable is not set');
-    }
+    // Use cookie-parser middleware
+    app.use(cookieParser());
 
-    const store = new MongoDBSessionStore({
-      uri: mongoUri,
-      collection: 'express_sessions', // Use a different collection name to avoid conflicts
-      expires: 3600000, // 1 hour (in milliseconds)
-    });
-
-    // Handle store errors
-    store.on('error', (error) => {
-      console.error('MongoDB session store error:', error);
-    });
-
-    // Configure express-session with MongoDB store
+    // Configure and use express-session
     app.use(
       session({
-        secret: configService.get<string>('SESSION_SECRET') || 'supersecret', // Use a strong secret from environment variables
+        secret: jwtConstants.secret, // Use secret from constants
         resave: false,
         saveUninitialized: false,
-        store: store, // Use MongoDB store instead of default MemoryStore
         cookie: {
-          maxAge: 3600000, // 1 hour
+          maxAge: jwtConstants.sessionTimeout, // Use sessionTimeout from constants
+          secure: process.env.NODE_ENV === 'production', // Use secure cookies in production
           httpOnly: true,
-          // For local development (HTTP), secure should be false.
-          // For production (HTTPS), secure should be true.
-          secure: process.env.NODE_ENV === 'production',
-          // Set SameSite to 'Lax' for development (default, but explicit)
-          // For cross-site requests in production (e.g., separate frontend domain),
-          // it should be 'None' and 'secure' must be true.
           sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
         },
       }),
@@ -61,6 +41,7 @@ async function bootstrapServer() {
 
     // Initialize Passport
     app.use(passport.initialize());
+    // Enable Passport session support for cookie-based authentication
     app.use(passport.session());
 
     // 1. Enable Global Validation Pipe for DTOs

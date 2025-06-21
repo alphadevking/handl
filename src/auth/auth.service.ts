@@ -5,6 +5,7 @@ import { Model, Types } from 'mongoose';
 import { User } from '../database/schemas/user.schema';
 import { Profile } from 'passport-google-oauth20';
 import { v4 as uuidv4 } from 'uuid';
+import { JwtService } from '@nestjs/jwt'; // Import JwtService
 
 @Injectable()
 export class AuthService {
@@ -12,6 +13,7 @@ export class AuthService {
     private configService: ConfigService,
     @InjectModel(User.name)
     private userModel: Model<User>,
+    private jwtService: JwtService, // Inject JwtService
   ) { }
 
   /**
@@ -94,5 +96,28 @@ export class AuthService {
     } catch (error) {
       return null;
     }
+  }
+
+  /**
+   * Generates a JWT for the given user.
+   * @param user The user object for whom to generate the JWT.
+   * @returns An object containing the access token.
+   */
+  async login(user: User) {
+    const payload = { email: user.email, sub: user._id.toString() };
+    return {
+      access_token: this.jwtService.sign(payload),
+    };
+  }
+
+  /**
+   * Generates a new API key for a given user and updates it in the database.
+   * @param userId The ID of the user for whom to generate a new API key.
+   * @returns The newly generated API key.
+   */
+  async generateNewApiKey(userId: string): Promise<string> {
+    const newApiKey = uuidv4();
+    await this.userModel.findByIdAndUpdate(userId, { apiKey: newApiKey }).exec();
+    return newApiKey;
   }
 }

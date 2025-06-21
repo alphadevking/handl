@@ -4,7 +4,6 @@ import { DatabaseService } from './database.service';
 import { FormEntry, FormEntrySchema } from './schemas/form-entry.schema';
 import { FormDefinition, FormDefinitionSchema } from './schemas/form-definition.schema';
 import { User, UserSchema } from './schemas/user.schema';
-import { Session, SessionSchema } from './schemas/session.schema';
 
 @Module({
   imports: [
@@ -12,7 +11,6 @@ import { Session, SessionSchema } from './schemas/session.schema';
       { name: FormEntry.name, schema: FormEntrySchema },
       { name: FormDefinition.name, schema: FormDefinitionSchema },
       { name: User.name, schema: UserSchema },
-      { name: Session.name, schema: SessionSchema },
     ]),
   ],
   providers: [DatabaseService],

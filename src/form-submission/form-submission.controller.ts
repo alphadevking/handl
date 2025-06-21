@@ -1,6 +1,7 @@
 import { Controller, Post, Body, HttpCode, HttpStatus, UseGuards, Get, Param, Delete, Req } from '@nestjs/common';
 import { Request } from 'express'; // Import Request from express
-import { ApiKeyAuthGuard } from '../auth/api-key-auth.guard';
+import { ApiKeyAuthGuard } from '../auth/api-key-auth.guard'; // Import ApiKeyAuthGuard
+// import { JwtAuthGuard } from '../auth/jwt-auth.guard'; // Import JwtAuthGuard
 import { FormSubmissionService } from './form-submission.service';
 import { SubmitFormDto } from './dto/submit-form.dto';
 import { FormEntry } from '../database/schemas/form-entry.schema'; // Import FormEntry schema
@@ -8,8 +9,12 @@ import { Types } from 'mongoose'; // Import Types for ObjectId
 
 /**
  * Controller for managing form submissions and retrieving/deleting form entries.
- * All routes are protected by ApiKeyAuthGuard.
+ * All routes are protected by ApiKeyAuthGuard and JwtAuthGuard.
  */
+// --- OLD IMPLEMENTATION (v1) ---
+// @UseGuards(ApiKeyAuthGuard, JwtAuthGuard) // Use both ApiKeyAuthGuard and JwtAuthGuard
+// --- NEW IMPLEMENTATION (v1) ---
+// Use only ApiKeyAuthGuard for form submission management as per user's request.
 @UseGuards(ApiKeyAuthGuard)
 @Controller('form-submissions') // Changed base path to align with RESTful conventions
 export class FormSubmissionController {

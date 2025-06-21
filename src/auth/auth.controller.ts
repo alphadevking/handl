@@ -1,12 +1,11 @@
-import { Controller, Get, Req, Res, UseGuards, HttpCode, HttpStatus, InternalServerErrorException } from '@nestjs/common';
+import { Controller, Get, Req, Res, UseGuards, HttpCode, HttpStatus } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { Request, Response } from 'express';
 import { AuthService } from './auth.service';
 import { User } from '../database/schemas/user.schema';
 import { Types } from 'mongoose';
 import { ConfigService } from '@nestjs/config'; // Import ConfigService
-import { Session } from 'express-session';
-
+import { jwtConstants } from './constants'; // Import jwtConstants
 @Controller('auth')
 export class AuthController {
   constructor(
@@ -39,21 +38,26 @@ export class AuthController {
     // Passport will attach the user to req.user after successful authentication
     const user = req.user as User & { _id: Types.ObjectId };
     if (user) {
-      // User is authenticated, explicitly log in the user to establish a session
-      await new Promise<void>((resolve, reject) => {
-        req.login(user, (err) => {
-          if (err) {
-            return reject(err);
-          }
-          resolve();
-        });
-      });
+      // Generate JWT
+      const { access_token } = await this.authService.login(user);
+      // console.log('JWT generated:', access_token); // Log the generated JWT
 
-      // Redirect to the frontend OAuth callback route with success status using path parameters
-      res.redirect(`${this.configService.get('FRONTEND_AUTH_SUCCESS_REDIRECT')}/success/${user._id.toString()}`);
+      // Set the JWT as an HTTP-only cookie
+      res.cookie('access_token', access_token, {
+        httpOnly: true,
+        secure: this.configService.get('NODE_ENV') === 'production', // Use secure cookies in production
+        maxAge: jwtConstants.sessionTimeout, // Use sessionTimeout from constants
+        sameSite: this.configService.get('NODE_ENV') === 'production' ? 'none' : 'lax', // Set SameSite based on environment
+      });
+      // console.log('JWT assigned to access_token cookie.'); // Log when the cookie is set
+
+      // Redirect to the frontend OAuth success redirect URL
+      const successRedirectUrl = this.configService.get('FRONTEND_AUTH_SUCCESS_REDIRECT') || 'http://localhost:5173/dashboard'; // Provide a default fallback URL
+      res.redirect(successRedirectUrl);
     } else {
-      // Authentication failed, redirect to the frontend OAuth callback route with failure status using path parameters
-      res.redirect(`${this.configService.get('FRONTEND_AUTH_FAILURE_REDIRECT')}/failure/authentication-failed`);
+      // Authentication failed, redirect to the frontend OAuth failure redirect URL
+      const failureRedirectUrl = this.configService.get<string>('FRONTEND_AUTH_FAILURE_REDIRECT') || 'http://localhost:5173/login'; // Provide a default fallback URL
+      res.redirect(failureRedirectUrl);
     }
   }
 
@@ -89,96 +93,60 @@ export class AuthController {
    * @returns The authenticated user object or null if not authenticated.
    */
   @Get('status')
-  // @UseGuards(AuthGuard('session')) // Keep AuthGuard commented out as it seems to be the issue
+  @UseGuards(AuthGuard('jwt')) // Use JwtAuthGuard
   @HttpCode(HttpStatus.OK)
-  async authStatus(@Req() req: Request) {
-    // --- OLD IMPLEMENTATION (v1) ---
-    // try {
-    //   const user = req.user || null;
-    //   return {
-    //     isAuthenticated: !!user,
-    //     user: user ? { id: user.id, email: user.email, firstName: user.firstName } : null,
-    //   };
-    // } catch (error) {
-    //   throw new InternalServerErrorException('Failed to check authentication status.');
-    // }
-    // --- NEW IMPLEMENTATION (v1) ---
-    // console.log('AuthController: /auth/status endpoint hit (without AuthGuard)');
-    // console.log('Initial req.isAuthenticated():', req.isAuthenticated());
-    // console.log('Initial req.user:', req.user);
-
-    let user = req.user as (User & { _id: Types.ObjectId }) | null; // Ensure user is User | null
-
-    // Manually check session for Passport user ID if req.user is not populated
-    const sessionWithPassport = req.session as Session as any; // Cast to any to bypass TypeScript error
-    if (!user && sessionWithPassport && sessionWithPassport.passport && sessionWithPassport.passport.user) {
-      console.log('Found user ID in session.passport.user:', sessionWithPassport.passport.user);
-      try {
-        // Attempt to deserialize the user manually
-        user = await this.authService.findUserById(sessionWithPassport.passport.user);
-        if (user) {
-          // Manually attach user to request for this context
-          req.user = user;
-          console.log('Manually populated req.user:', user._id.toString());
-        } else {
-          console.log('User not found for ID from session:', sessionWithPassport.passport.user);
-        }
-      } catch (error) {
-        console.error('Error manually deserializing user:', error);
-      }
-    }
-
-    // console.log('Final req.isAuthenticated():', req.isAuthenticated());
-    // console.log('Final req.user:', req.user);
-
-    try {
-      const isAuthenticated = !!user;
-      console.log('isAuthenticated:', isAuthenticated);
-      console.log('user:', user);
+  authStatus(@Req() req: Request) {
+    // User is authenticated via JWT, req.user will be populated by JwtStrategy
+    const user = req.user as User & { _id: Types.ObjectId; };
+    // console.log('Auth status user:', user);
+    // Return the user details if authenticated, otherwise return null
+    if (user) {
       return {
-        isAuthenticated: isAuthenticated,
-        user: user ? { id: user._id.toString(), email: user.email, firstName: user.firstName, apiKey: user.apiKey } : null,
+        isAuthenticated: true,
+        user: {
+          id: user._id.toString(),
+          email: user.email,
+          firstName: user.firstName,
+          apiKey: user.apiKey,
+        },
       };
-    } catch (error) {
-      console.error('Error in authStatus:', error);
-      throw new InternalServerErrorException('Failed to check authentication status.');
+    } else {
+      return {
+        isAuthenticated: false,
+        user: null,
+      };
     }
   }
 
   /**
-   * Logs out the current user.
-   * @param req The request object.
-   * @param res The response object for redirection.
-   * @returns Redirects to the login page or sends a logout success message.
-   * @throws InternalServerErrorException if logout or session destruction fails.
+   * Logs out the current user by clearing the access token cookie.
+   * @param res The response object for clearing cookies and redirection.
+   * @returns Redirects to the login page.
    */
   @Get('logout')
   @HttpCode(HttpStatus.OK)
-  async logout(@Req() req: Request, @Res() res: Response) { // Re-added @Res() res: Response
-    try {
-      await new Promise<void>((resolve, reject) => {
-        req.logout((err) => {
-          if (err) {
-            return reject(err);
-          }
-          resolve();
-        });
-      });
+  logout(@Res() res: Response) {
+    // Clear the access_token cookie
+    res.clearCookie('access_token');
 
-      await new Promise<void>((resolve, reject) => {
-        req.session.destroy((err) => {
-          if (err) {
-            return reject(err);
-          }
-          resolve();
-        });
-      });
+    // Redirect the user to the login page (FRONTEND_AUTH_FAILURE_REDIRECT)
+    const loginRedirectUrl = this.configService.get<string>('FRONTEND_AUTH_FAILURE_REDIRECT') || 'http://localhost:5173/login';
+    res.redirect(loginRedirectUrl);
+  }
 
-      res.clearCookie('connect.sid'); // Clear the session cookie
-      const loginRedirectUrl = this.configService.get<string>('FRONTEND_AUTH_FAILURE_REDIRECT') || 'http://localhost:5173/login'; // Redirect to login page
-      res.redirect(loginRedirectUrl);
-    } catch (err) {
-      throw new InternalServerErrorException(`Logout failed: ${err.message}`);
-    }
+  /**
+   * Generates a new API key for the authenticated user.
+   * This route is protected by JWT, ensuring only logged-in users can generate API keys.
+   * @param req The request object containing the authenticated user.
+   * @returns An object containing the newly generated API key.
+   */
+  @Get('generate-api-key')
+  @UseGuards(AuthGuard('jwt')) // Protect this route with JWT
+  @HttpCode(HttpStatus.OK)
+  async generateApiKey(@Req() req: Request) {
+    const user = req.user as User & { _id: Types.ObjectId };
+    // Generate a new API key for the user
+    const newApiKey = await this.authService.generateNewApiKey(user._id.toString());
+    return { apiKey: newApiKey };
   }
 }

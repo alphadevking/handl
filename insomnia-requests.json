@@ -1,438 +1,513 @@
 {
   "_type": "export",
   "__export_format": 4,
-  "__export_date": "2023-10-27T12:00:00.000Z",
-  "__export_source": "insomnia.desktop.app:v8.x.x",
+  "__export_date": "2025-06-21T00:00:00.000Z",
+  "__export_source": "insomnia.rest",
   "resources": [
     {
-      "_id": "req_auth_google",
-      "parentId": "fld_authentication",
-      "modified": 1678886400000,
-      "created": 1678886400000,
-      "url": "{{ _.baseUrl }}/auth/google",
-      "name": "Google OAuth Login",
-      "description": "Initiates the Google OAuth login process. This will redirect to Google.",
+      "_id": "wrk_handl_api",
+      "_type": "workspace",
+      "name": "Handl API",
+      "description": "Insomnia requests for Handl API",
+      "scope": "collection"
+    },
+    {
+      "_id": "env_base_environment",
+      "_type": "environment",
+      "parentId": "wrk_handl_api",
+      "name": "Base Environment",
+      "data": {
+        "base_url": "http://localhost:3000"
+      },
+      "color": null,
+      "is_private": false,
+      "metaSortKey": 1
+    },
+    {
+      "_id": "fld_app_controller",
+      "_type": "request_group",
+      "parentId": "wrk_handl_api",
+      "name": "App Controller",
+      "description": "Routes for the main application controller",
+      "environment": {},
+      "metaSortKey": 10
+    },
+    {
+      "_id": "req_app_get_hello",
+      "_type": "request",
+      "parentId": "fld_app_controller",
+      "name": "GET /",
       "method": "GET",
       "body": {},
       "parameters": [],
       "headers": [],
       "authentication": {},
-      "metaSortKey": -1678886400000,
+      "metaSortKey": 100,
       "isPrivate": false,
       "settingStoreCookies": true,
       "settingSendCookies": true,
       "settingDisableRenderRequestBody": false,
       "settingEncodeUrl": true,
       "settingRebuildPath": true,
-      "settingFollowRedirects": "global",
-      "_type": "request"
+      "url": "{{base_url}}/"
+    },
+    {
+      "_id": "fld_auth_controller",
+      "_type": "request_group",
+      "parentId": "wrk_handl_api",
+      "name": "Auth Controller",
+      "description": "Authentication related routes",
+      "environment": {},
+      "metaSortKey": 20
+    },
+    {
+      "_id": "req_auth_google",
+      "_type": "request",
+      "parentId": "fld_auth_controller",
+      "name": "GET /auth/google (Initiate OAuth)",
+      "method": "GET",
+      "body": {},
+      "parameters": [],
+      "headers": [],
+      "authentication": {},
+      "metaSortKey": 100,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "url": "{{base_url}}/auth/google"
     },
     {
       "_id": "req_auth_google_callback",
-      "parentId": "fld_authentication",
-      "modified": 1678886400000,
-      "created": 1678886400000,
-      "url": "{{ _.baseUrl }}/auth/google/callback",
-      "name": "Google OAuth Callback (Internal)",
-      "description": "Handles the Google OAuth callback. This URL is typically hit by Google after successful authentication. Not meant for direct manual use in Insomnia.",
+      "_type": "request",
+      "parentId": "fld_auth_controller",
+      "name": "GET /auth/google/callback (OAuth Callback)",
       "method": "GET",
       "body": {},
       "parameters": [],
       "headers": [],
       "authentication": {},
-      "metaSortKey": -1678886300000,
+      "metaSortKey": 200,
       "isPrivate": false,
       "settingStoreCookies": true,
       "settingSendCookies": true,
       "settingDisableRenderRequestBody": false,
       "settingEncodeUrl": true,
       "settingRebuildPath": true,
-      "settingFollowRedirects": "global",
-      "_type": "request"
+      "url": "{{base_url}}/auth/google/callback",
+      "description": "This endpoint is typically handled by Google after successful authentication. You might not call this directly."
+    },
+    {
+      "_id": "req_auth_success",
+      "_type": "request",
+      "parentId": "fld_auth_controller",
+      "name": "GET /auth/success",
+      "method": "GET",
+      "body": {},
+      "parameters": [],
+      "headers": [],
+      "authentication": {},
+      "metaSortKey": 300,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "url": "{{base_url}}/auth/success",
+      "description": "Provides a success page after Google OAuth. For direct API testing or fallback."
+    },
+    {
+      "_id": "req_auth_failure",
+      "_type": "request",
+      "parentId": "fld_auth_controller",
+      "name": "GET /auth/failure",
+      "method": "GET",
+      "body": {},
+      "parameters": [],
+      "headers": [],
+      "authentication": {},
+      "metaSortKey": 400,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "url": "{{base_url}}/auth/failure",
+      "description": "Provides a failure page after Google OAuth. For direct API testing or fallback."
     },
     {
       "_id": "req_auth_status",
-      "parentId": "fld_authentication",
-      "modified": 1678886400000,
-      "created": 1678886400000,
-      "url": "{{ _.baseUrl }}/auth/status",
-      "name": "Get Auth Status",
-      "description": "Checks if a user is currently authenticated via session.",
+      "_type": "request",
+      "parentId": "fld_auth_controller",
+      "name": "GET /auth/status",
       "method": "GET",
       "body": {},
       "parameters": [],
       "headers": [],
-      "authentication": {},
-      "metaSortKey": -1678886200000,
+      "authentication": {
+        "type": "bearer",
+        "token": "YOUR_JWT_TOKEN_HERE"
+      },
+      "metaSortKey": 500,
       "isPrivate": false,
       "settingStoreCookies": true,
       "settingSendCookies": true,
       "settingDisableRenderRequestBody": false,
       "settingEncodeUrl": true,
       "settingRebuildPath": true,
-      "settingFollowRedirects": "global",
-      "_type": "request"
+      "url": "{{base_url}}/auth/status",
+      "description": "Checks authentication status. Requires JWT in Authorization header (Bearer Token)."
     },
     {
       "_id": "req_auth_logout",
-      "parentId": "fld_authentication",
-      "modified": 1678886400000,
-      "created": 1678886400000,
-      "url": "{{ _.baseUrl }}/auth/logout",
-      "name": "Logout",
-      "description": "Logs out the current user session.",
+      "_type": "request",
+      "parentId": "fld_auth_controller",
+      "name": "GET /auth/logout",
       "method": "GET",
       "body": {},
       "parameters": [],
       "headers": [],
       "authentication": {},
-      "metaSortKey": -1678886100000,
+      "metaSortKey": 600,
       "isPrivate": false,
       "settingStoreCookies": true,
       "settingSendCookies": true,
       "settingDisableRenderRequestBody": false,
       "settingEncodeUrl": true,
       "settingRebuildPath": true,
-      "settingFollowRedirects": "global",
-      "_type": "request"
+      "url": "{{base_url}}/auth/logout",
+      "description": "Logs out the user by clearing the access token cookie."
     },
     {
-      "_id": "req_form_definition_create",
-      "parentId": "fld_form_definitions",
-      "modified": 1678886400000,
-      "created": 1678886400000,
-      "url": "{{ _.baseUrl }}/form-definitions",
-      "name": "Create Form Definition",
-      "description": "Creates a new form definition.",
+      "_id": "fld_form_definition_controller",
+      "_type": "request_group",
+      "parentId": "wrk_handl_api",
+      "name": "Form Definition Controller",
+      "description": "Routes for managing form definitions. Requires API Key.",
+      "environment": {},
+      "metaSortKey": 30
+    },
+    {
+      "_id": "req_form_def_create",
+      "_type": "request",
+      "parentId": "fld_form_definition_controller",
+      "name": "POST /form-definitions",
       "method": "POST",
       "body": {
         "mimeType": "application/json",
-        "text": "{\n  \"id\": \"contact-us\",\n  \"schema\": {\n    \"type\": \"object\",\n    \"properties\": {\n      \"name\": { \"type\": \"string\" },\n      \"email\": { \"type\": \"string\", \"format\": \"email\" },\n      \"message\": { \"type\": \"string\" }\n    },\n    \"required\": [\"name\", \"email\", \"message\"]\n  },\n  \"description\": \"Contact Us Form Definition\"\n}"
+        "text": "{\n  \"name\": \"MyNewForm\",\n  \"schema\": {\n    \"type\": \"object\",\n    \"properties\": {\n      \"field1\": {\n        \"type\": \"string\"\n      }\n    }\n  },\n  \"emailConfig\": {\n    \"recipientEmail\": \"test@example.com\",\n    \"subject\": \"New Form Submission\",\n    \"emailTemplate\": \"<h1>New Submission</h1><p>Field1: {{field1}}</p>\"\n  }\n}"
       },
       "parameters": [],
       "headers": [
         {
-          "name": "Content-Type",
-          "value": "application/json"
-        },
-        {
-          "name": "X-API-KEY",
-          "value": "{{ _.apiKey }}"
+          "id": "header_api_key_or_jwt",
+          "name": "x-api-key",
+          "value": "YOUR_API_KEY_HERE",
+          "description": "Use x-api-key header"
         }
       ],
       "authentication": {},
-      "metaSortKey": -1678886400000,
+      "metaSortKey": 100,
       "isPrivate": false,
       "settingStoreCookies": true,
       "settingSendCookies": true,
       "settingDisableRenderRequestBody": false,
       "settingEncodeUrl": true,
       "settingRebuildPath": true,
-      "settingFollowRedirects": "global",
-      "_type": "request"
+      "url": "{{base_url}}/form-definitions",
+      "description": "Creates a new form definition. Requires API Key (x-api-key header)."
     },
     {
-      "_id": "req_form_definition_get_all",
-      "parentId": "fld_form_definitions",
-      "modified": 1678886400000,
-      "created": 1678886400000,
-      "url": "{{ _.baseUrl }}/form-definitions",
-      "name": "Get All Form Definitions",
-      "description": "Retrieves all form definitions.",
+      "_id": "req_form_def_find_all",
+      "_type": "request",
+      "parentId": "fld_form_definition_controller",
+      "name": "GET /form-definitions",
       "method": "GET",
       "body": {},
       "parameters": [],
       "headers": [
         {
-          "name": "X-API-KEY",
-          "value": "{{ _.apiKey }}"
+          "id": "header_api_key_or_jwt",
+          "name": "x-api-key",
+          "value": "YOUR_API_KEY_HERE",
+          "description": "Use x-api-key header"
         }
       ],
       "authentication": {},
-      "metaSortKey": -1678886300000,
+      "metaSortKey": 200,
       "isPrivate": false,
       "settingStoreCookies": true,
       "settingSendCookies": true,
       "settingDisableRenderRequestBody": false,
       "settingEncodeUrl": true,
       "settingRebuildPath": true,
-      "settingFollowRedirects": "global",
-      "_type": "request"
+      "url": "{{base_url}}/form-definitions",
+      "description": "Retrieves all form definitions. Requires API Key (x-api-key header)."
     },
     {
-      "_id": "req_form_definition_get_by_name",
-      "parentId": "fld_form_definitions",
-      "modified": 1678886400000,
-      "created": 1678886400000,
-      "url": "{{ _.baseUrl }}/form-definitions/{{ _.formDefinitionName }}",
-      "name": "Get Form Definition by Name",
-      "description": "Retrieves a single form definition by its name (ID).",
+      "_id": "req_form_def_find_one",
+      "_type": "request",
+      "parentId": "fld_form_definition_controller",
+      "name": "GET /form-definitions/:id",
       "method": "GET",
       "body": {},
-      "parameters": [],
+      "parameters": [
+        {
+          "id": "param_form_def_id",
+          "name": "id",
+          "value": "FORM_DEFINITION_ID_HERE",
+          "disabled": false
+        }
+      ],
       "headers": [
         {
-          "name": "X-API-KEY",
-          "value": "{{ _.apiKey }}"
+          "id": "header_api_key_or_jwt",
+          "name": "x-api-key",
+          "value": "YOUR_API_KEY_HERE",
+          "description": "Use x-api-key header"
         }
       ],
       "authentication": {},
-      "metaSortKey": -1678886200000,
+      "metaSortKey": 300,
       "isPrivate": false,
       "settingStoreCookies": true,
       "settingSendCookies": true,
       "settingDisableRenderRequestBody": false,
       "settingEncodeUrl": true,
       "settingRebuildPath": true,
-      "settingFollowRedirects": "global",
-      "_type": "request"
+      "url": "{{base_url}}/form-definitions/{{_.id}}"
     },
     {
-      "_id": "req_form_definition_update_by_name",
-      "parentId": "fld_form_definitions",
-      "modified": 1678886400000,
-      "created": 1678886400000,
-      "url": "{{ _.baseUrl }}/form-definitions/{{ _.formDefinitionName }}",
-      "name": "Update Form Definition by Name",
-      "description": "Updates an existing form definition by its name (ID).",
+      "_id": "req_form_def_update",
+      "_type": "request",
+      "parentId": "fld_form_definition_controller",
+      "name": "PUT /form-definitions/:id",
       "method": "PUT",
       "body": {
         "mimeType": "application/json",
-        "text": "{\n  \"schema\": {\n    \"type\": \"object\",\n    \"properties\": {\n      \"updatedField\": { \"type\": \"string\" }\n    },\n    \"required\": [\"updatedField\"]\n  },\n  \"description\": \"This is an updated description for the form.\"\n}"
+        "text": "{\n  \"name\": \"UpdatedFormName\",\n  \"schema\": {\n    \"type\": \"object\",\n    \"properties\": {\n      \"field1\": {\n        \"type\": \"string\"\n      },\n      \"newField\": {\n        \"type\": \"number\"\n      }\n    }\n  },\n  \"emailConfig\": {\n    \"recipientEmail\": \"updated@example.com\",\n    \"subject\": \"Updated Submission\",\n    \"emailTemplate\": \"<h1>Updated Submission</h1>\"\n  }\n}"
       },
-      "parameters": [],
+      "parameters": [
+        {
+          "id": "param_form_def_id",
+          "name": "id",
+          "value": "FORM_DEFINITION_ID_HERE",
+          "disabled": false
+        }
+      ],
       "headers": [
         {
-          "name": "Content-Type",
-          "value": "application/json"
-        },
-        {
-          "name": "X-API-KEY",
-          "value": "{{ _.apiKey }}"
+          "id": "header_api_key_or_jwt",
+          "name": "x-api-key",
+          "value": "YOUR_API_KEY_HERE",
+          "description": "Use x-api-key header"
         }
       ],
       "authentication": {},
-      "metaSortKey": -1678886100000,
+      "metaSortKey": 400,
       "isPrivate": false,
       "settingStoreCookies": true,
       "settingSendCookies": true,
       "settingDisableRenderRequestBody": false,
       "settingEncodeUrl": true,
       "settingRebuildPath": true,
-      "settingFollowRedirects": "global",
-      "_type": "request"
+      "url": "{{base_url}}/form-definitions/{{_.id}}",
+      "description": "Updates an existing form definition. Requires API Key (x-api-key header)."
     },
     {
-      "_id": "req_form_definition_delete_by_name",
-      "parentId": "fld_form_definitions",
-      "modified": 1678886400000,
-      "created": 1678886400000,
-      "url": "{{ _.baseUrl }}/form-definitions/{{ _.formDefinitionName }}",
-      "name": "Delete Form Definition by Name",
-      "description": "Deletes a form definition by its name (ID).",
+      "_id": "req_form_def_delete",
+      "_type": "request",
+      "parentId": "fld_form_definition_controller",
+      "name": "DELETE /form-definitions/:id",
       "method": "DELETE",
       "body": {},
-      "parameters": [],
+      "parameters": [
+        {
+          "id": "param_form_def_id",
+          "name": "id",
+          "value": "FORM_DEFINITION_ID_HERE",
+          "disabled": false
+        }
+      ],
       "headers": [
         {
-          "name": "X-API-KEY",
-          "value": "{{ _.apiKey }}"
+          "id": "header_api_key_or_jwt",
+          "name": "x-api-key",
+          "value": "YOUR_API_KEY_HERE",
+          "description": "Use x-api-key header"
         }
       ],
       "authentication": {},
-      "metaSortKey": -1678886000000,
+      "metaSortKey": 500,
       "isPrivate": false,
       "settingStoreCookies": true,
       "settingSendCookies": true,
       "settingDisableRenderRequestBody": false,
       "settingEncodeUrl": true,
       "settingRebuildPath": true,
-      "settingFollowRedirects": "global",
-      "_type": "request"
+      "url": "{{base_url}}/form-definitions/{{_.id}}",
+      "description": "Deletes a form definition. Requires API Key (x-api-key header)."
     },
     {
-      "_id": "req_form_submission_submit",
-      "parentId": "fld_form_submissions",
-      "modified": 1678886400000,
-      "created": 1678886400000,
-      "url": "{{ _.baseUrl }}/form-submissions",
-      "name": "Submit Form",
-      "description": "Submits a new form entry.",
+      "_id": "fld_form_submission_controller",
+      "_type": "request_group",
+      "parentId": "wrk_handl_api",
+      "name": "Form Submission Controller",
+      "description": "Routes for submitting forms and managing entries. Requires API Key.",
+      "environment": {},
+      "metaSortKey": 40
+    },
+    {
+      "_id": "req_form_sub_submit",
+      "_type": "request",
+      "parentId": "fld_form_submission_controller",
+      "name": "POST /form-submissions",
       "method": "POST",
       "body": {
         "mimeType": "application/json",
-        "text": "{\n  \"formId\": \"contact-us\",\n  \"formData\": {\n    \"name\": \"John Doe\",\n    \"email\": \"john.doe@example.com\",\n    \"message\": \"This is a test message.\"\n  }\n}"
+        "text": "{\n  \"formDefinitionId\": \"FORM_DEFINITION_ID_HERE\",\n  \"formData\": {\n    \"field1\": \"value1\",\n    \"field2\": \"value2\"\n  }\n}"
       },
       "parameters": [],
       "headers": [
         {
-          "name": "Content-Type",
-          "value": "application/json"
-        },
-        {
-          "name": "X-API-KEY",
-          "value": "{{ _.apiKey }}"
+          "id": "header_api_key_or_jwt",
+          "name": "x-api-key",
+          "value": "YOUR_API_KEY_HERE",
+          "description": "Use x-api-key header"
         }
       ],
       "authentication": {},
-      "metaSortKey": -1678885900000,
+      "metaSortKey": 100,
       "isPrivate": false,
       "settingStoreCookies": true,
       "settingSendCookies": true,
       "settingDisableRenderRequestBody": false,
       "settingEncodeUrl": true,
       "settingRebuildPath": true,
-      "settingFollowRedirects": "global",
-      "_type": "request"
+      "url": "{{base_url}}/form-submissions",
+      "description": "Submits a new form entry. Requires API Key (x-api-key header)."
     },
     {
-      "_id": "req_form_submission_get_all",
-      "parentId": "fld_form_submissions",
-      "modified": 1678886400000,
-      "created": 1678886400000,
-      "url": "{{ _.baseUrl }}/form-submissions",
-      "name": "Get All Form Submissions",
-      "description": "Retrieves all form entries.",
+      "_id": "req_form_sub_find_all",
+      "_type": "request",
+      "parentId": "fld_form_submission_controller",
+      "name": "GET /form-submissions",
       "method": "GET",
       "body": {},
       "parameters": [],
       "headers": [
         {
-          "name": "X-API-KEY",
-          "value": "{{ _.apiKey }}"
+          "id": "header_api_key_or_jwt",
+          "name": "x-api-key",
+          "value": "YOUR_API_KEY_HERE",
+          "description": "Use x-api-key header"
         }
       ],
       "authentication": {},
-      "metaSortKey": -1678885800000,
+      "metaSortKey": 200,
       "isPrivate": false,
       "settingStoreCookies": true,
       "settingSendCookies": true,
       "settingDisableRenderRequestBody": false,
       "settingEncodeUrl": true,
       "settingRebuildPath": true,
-      "settingFollowRedirects": "global",
-      "_type": "request"
+      "url": "{{base_url}}/form-submissions",
+      "description": "Retrieves all form entries. Requires API Key (x-api-key header)."
     },
     {
-      "_id": "req_form_submission_get_by_id",
-      "parentId": "fld_form_submissions",
-      "modified": 1678886400000,
-      "created": 1678886400000,
-      "url": "{{ _.baseUrl }}/form-submissions/{{ _.formEntryId }}",
-      "name": "Get Form Submission by ID",
-      "description": "Retrieves a single form entry by its ID.",
+      "_id": "req_form_sub_find_one",
+      "_type": "request",
+      "parentId": "fld_form_submission_controller",
+      "name": "GET /form-submissions/:id",
       "method": "GET",
       "body": {},
-      "parameters": [],
+      "parameters": [
+        {
+          "id": "param_form_entry_id",
+          "name": "id",
+          "value": "FORM_ENTRY_ID_HERE",
+          "disabled": false
+        }
+      ],
       "headers": [
         {
-          "name": "X-API-KEY",
-          "value": "{{ _.apiKey }}"
+          "id": "header_api_key_or_jwt",
+          "name": "x-api-key",
+          "value": "YOUR_API_KEY_HERE",
+          "description": "Use x-api-key header"
         }
       ],
       "authentication": {},
-      "metaSortKey": -1678885700000,
+      "metaSortKey": 300,
       "isPrivate": false,
       "settingStoreCookies": true,
       "settingSendCookies": true,
       "settingDisableRenderRequestBody": false,
       "settingEncodeUrl": true,
       "settingRebuildPath": true,
-      "settingFollowRedirects": "global",
-      "_type": "request"
+      "url": "{{base_url}}/form-submissions/{{_.id}}",
+      "description": "Retrieves a single form entry. Requires API Key (x-api-key header)."
     },
     {
-      "_id": "req_form_submission_delete_by_id",
-      "parentId": "fld_form_submissions",
-      "modified": 1678886400000,
-      "created": 1678886400000,
-      "url": "{{ _.baseUrl }}/form-submissions/{{ _.formEntryId }}",
-      "name": "Delete Form Submission by ID",
-      "description": "Deletes a form entry by its ID.",
+      "_id": "req_form_sub_delete",
+      "_type": "request",
+      "parentId": "fld_form_submission_controller",
+      "name": "DELETE /form-submissions/:id",
       "method": "DELETE",
       "body": {},
-      "parameters": [],
+      "parameters": [
+        {
+          "id": "param_form_entry_id",
+          "name": "id",
+          "value": "FORM_ENTRY_ID_HERE",
+          "disabled": false
+        }
+      ],
       "headers": [
         {
-          "name": "X-API-KEY",
-          "value": "{{ _.apiKey }}"
+          "id": "header_api_key_or_jwt",
+          "name": "x-api-key",
+          "value": "YOUR_API_KEY_HERE",
+          "description": "Use x-api-key header"
         }
       ],
       "authentication": {},
-      "metaSortKey": -1678885600000,
+      "metaSortKey": 400,
       "isPrivate": false,
       "settingStoreCookies": true,
       "settingSendCookies": true,
       "settingDisableRenderRequestBody": false,
       "settingEncodeUrl": true,
       "settingRebuildPath": true,
-      "settingFollowRedirects": "global",
-      "_type": "request"
+      "url": "{{base_url}}/form-submissions/{{_.id}}",
+      "description": "Deletes a form entry. Requires API Key (x-api-key header)."
     },
     {
-      "_id": "fld_form_definitions",
-      "parentId": "wrk_main",
-      "modified": 1678886400000,
-      "created": 1678886400000,
-      "name": "Form Definitions",
-      "description": "Requests for managing form definitions.",
-      "environment": {},
-      "metaSortKey": -1678886400000,
-      "_type": "request_group"
-    },
-    {
-      "_id": "fld_form_submissions",
-      "parentId": "wrk_main",
-      "modified": 1678886400000,
-      "created": 1678886400000,
-      "name": "Form Submissions",
-      "description": "Requests for managing form submissions.",
-      "environment": {},
-      "metaSortKey": -1678885900000,
-      "_type": "request_group"
-    },
-    {
-      "_id": "fld_authentication",
-      "parentId": "wrk_main",
-      "modified": 1678886400000,
-      "created": 1678886400000,
-      "name": "Authentication",
-      "description": "Requests for Google OAuth authentication.",
-      "environment": {},
-      "metaSortKey": -1678886500000,
-      "_type": "request_group"
-    },
-    {
-      "_id": "env_main",
-      "parentId": "wrk_main",
-      "modified": 1678886400000,
-      "created": 1678886400000,
-      "name": "Base Environment",
-      "data": {
-        "baseUrl": "http://localhost:3000",
-        "apiKey": "YOUR_API_KEY",
-        "formDefinitionName": "contact-us",
-        "formEntryId": "YOUR_FORM_ENTRY_ID"
+      "_id": "req_auth_generate_api_key",
+      "_type": "request",
+      "parentId": "fld_auth_controller",
+      "name": "GET /auth/generate-api-key",
+      "method": "GET",
+      "body": {},
+      "parameters": [],
+      "headers": [],
+      "authentication": {
+        "type": "bearer",
+        "token": "YOUR_JWT_TOKEN_HERE"
       },
-      "dataPropertyOrder": {
-        "baseUrl": 0,
-        "apiKey": 1,
-        "formDefinitionName": 2,
-        "formEntryId": 3
-      },
-      "color": null,
+      "metaSortKey": 700,
       "isPrivate": false,
-      "metaSortKey": 1678886400000,
-      "_type": "environment"
-    },
-    {
-      "_id": "wrk_main",
-      "modified": 1678886400000,
-      "created": 1678886400000,
-      "name": "Handl API",
-      "description": "Insomnia collection for the Handl API.",
-      "scope": "collection",
-      "_type": "workspace"
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "url": "{{base_url}}/auth/generate-api-key",
+      "description": "Generates a new API key for the authenticated user. Requires JWT in Authorization header (Bearer Token)."
     }
   ]
 }

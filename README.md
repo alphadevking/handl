@@ -11,7 +11,8 @@ Handl is a NestJS API service designed to provide a flexible and dynamic solutio
 *   **Dynamic Form Definitions:** Define and manage form schemas using JSON Schema, eliminating the need for code changes when new forms are introduced.
 *   **Secure Form Submissions:** Validate and sanitize incoming form data to prevent common web vulnerabilities like XSS.
 *   **Email Notifications:** Automatically send email notifications upon successful form submissions.
-*   **API Key Authentication:** Secure all API endpoints with robust API key-based authentication.
+*   **API Key Authentication:** Secure form definition and submission API endpoints with robust API key-based authentication.
+*   **JWT Authentication:** Secure user-specific endpoints (like API key generation) with JWT-based authentication.
 *   **Rate Limiting:** Protect against abuse and denial-of-service attacks with built-in rate limiting.
 *   **Database Storage:** Persist submitted form data and definitions in a PostgreSQL database (TypeORM support).
 *   **Comprehensive API:** RESTful endpoints for managing form definitions (create, read, update, delete) and form submissions (submit, retrieve, delete).
@@ -38,7 +39,8 @@ Handl is a NestJS API service designed to provide a flexible and dynamic solutio
 
 The Handl API incorporates several security enhancements to protect against common web vulnerabilities:
 
-*   **API Key Authentication:** All API endpoints are protected by an API key. Clients must provide a valid `X-API-KEY` header for authentication.
+*   **API Key Authentication:** Form definition and submission API endpoints are protected by an API key. Clients must provide a valid `X-API-KEY` header for authentication.
+*   **JWT Authentication:** User-specific endpoints, such as generating a new API key or checking authentication status, are protected by JWT (JSON Web Token) authentication. Users obtain a JWT after successful Google OAuth login, which is then used for subsequent authenticated requests.
 *   **Input Sanitization:** Incoming form data is sanitized using `isomorphic-dompurify` to prevent Cross-Site Scripting (XSS) attacks, especially in email content.
 *   **Rate Limiting:** Global rate limiting is applied to prevent abuse and denial-of-service attacks, limiting requests to 10 per minute.
 *   **Security Headers:** The `helmet` middleware is integrated to set various HTTP headers that enhance the application's security posture, such as `X-Content-Type-Options`, `X-Frame-Options`, `Strict-Transport-Security`, and more.
@@ -95,12 +97,43 @@ The application will typically run on `http://localhost:3000` (or the `PORT` spe
 
 Handl provides two main sets of API endpoints: one for managing form definitions and another for managing form submissions.
 
-### 1. Form Definition Management (`/form-definitions`)
+### API Endpoints
 
-This API allows you to define, retrieve, update, and delete JSON schemas for your dynamic forms.
+Handl provides three main sets of API endpoints: one for authentication, one for managing form definitions, and another for managing form submissions.
+
+### 1. Authentication Endpoints (`/auth`)
+
+These endpoints handle user authentication via Google OAuth and provide functionality for managing user-specific API keys.
+
+*   **`GET /auth/google`**
+    *   **Purpose:** Initiates the Google OAuth login process.
+    *   **Response:** Redirects to Google's authentication page.
+
+*   **`GET /auth/google/callback`**
+    *   **Purpose:** Handles the Google OAuth callback. After successful authentication, a JWT is generated and set as an HTTP-only cookie.
+    *   **Response:** Redirects the user to a success or failure page configured in environment variables.
+
+*   **`GET /auth/status`**
+    *   **Purpose:** Checks the current authentication status of the user. Requires an active JWT session.
+    *   **Authentication:** JWT (sent via HTTP-only cookie or `Authorization: Bearer` header).
+    *   **Response:** `HTTP 200 OK` with user details if authenticated, otherwise `isAuthenticated: false`.
+
+*   **`GET /auth/generate-api-key`**
+    *   **Purpose:** Generates a new API key for the authenticated user. This route is protected by JWT, ensuring only logged-in users can generate API keys.
+    *   **Authentication:** JWT (sent via HTTP-only cookie or `Authorization: Bearer` header).
+    *   **Response:** `HTTP 200 OK` with an object containing the newly generated API key.
+
+*   **`GET /auth/logout`**
+    *   **Purpose:** Logs out the current user by clearing the access token cookie.
+    *   **Response:** Redirects to the login page.
+
+### 2. Form Definition Management (`/form-definitions`)
+
+This API allows you to define, retrieve, update, and delete JSON schemas for your dynamic forms. All endpoints in this section require API Key authentication.
 
 *   **`POST /form-definitions`**
     *   **Purpose:** Create a new form definition.
+    *   **Authentication:** API Key (via `X-API-KEY` header).
     *   **Body (JSON Example - Contact Us):**
         ```json
         {
@@ -143,24 +176,28 @@ This API allows you to define, retrieve, update, and delete JSON schemas for you
 
 *   **`GET /form-definitions`**
     *   **Purpose:** Retrieve all defined form schemas.
+    *   **Authentication:** API Key (via `X-API-KEY` header).
     *   **Response:** `HTTP 200 OK` with an array of `FormDefinition` objects.
 
 *   **`GET /form-definitions/:name`**
     *   **Purpose:** Retrieve a single form definition by its unique name (ID).
+    *   **Authentication:** API Key (via `X-API-KEY` header).
     *   **Response:** `HTTP 200 OK` with the `FormDefinition` object, or `HTTP 404 Not Found` if the name does not exist.
 
 *   **`PUT /form-definitions/:name`**
     *   **Purpose:** Update an existing form definition by its unique name (ID).
+    *   **Authentication:** API Key (via `X-API-KEY` header).
     *   **Body (JSON Example):** `Partial<CreateFormDefinitionDto>` (e.g., just update the `description` or `schema`).
     *   **Response:** `HTTP 200 OK` with the updated `FormDefinition` object, or `HTTP 404 Not Found`.
 
 *   **`DELETE /form-definitions/:name`**
     *   **Purpose:** Delete a form definition by its unique name (ID).
+    *   **Authentication:** API Key (via `X-API-KEY` header).
     *   **Response:** `HTTP 204 No Content` on success, or `HTTP 404 Not Found`.
 
-### 2. Form Submission Management (`/form-submissions`)
+### 3. Form Submission Management (`/form-submissions`)
 
-This API is used by your frontend applications to submit data for a defined form, and to manage submitted entries.
+This API is used by your frontend applications to submit data for a defined form, and to manage submitted entries. All endpoints in this section require API Key authentication.
 
 *   **`POST /form-submissions`**
     *   **Purpose:** Submit data for a specific form ID. The data will be validated against the schema defined for that `formId`.
@@ -211,7 +248,37 @@ This API is used by your frontend applications to submit data for a defined form
 
 After starting the application (`pnpm run start:dev`), you can use the following cURL commands to test the API.
 
-### 1. Form Definition Endpoints
+### 1. Authentication Endpoints
+
+**Initiate Google OAuth:**
+```bash
+curl -X GET http://localhost:3000/auth/google
+```
+
+**Check Authentication Status (after successful Google OAuth, JWT will be in cookies):**
+```bash
+curl -X GET --cookie "access_token=YOUR_JWT_TOKEN_FROM_BROWSER_DEV_TOOLS" http://localhost:3000/auth/status
+# Alternatively, if you have the JWT:
+curl -X GET \
+  http://localhost:3000/auth/status \
+  -H 'Authorization: Bearer YOUR_JWT_TOKEN_HERE'
+```
+
+**Generate New API Key (after successful Google OAuth, JWT will be in cookies):**
+```bash
+curl -X GET --cookie "access_token=YOUR_JWT_TOKEN_FROM_BROWSER_DEV_TOOLS" http://localhost:3000/auth/generate-api-key
+# Alternatively, if you have the JWT:
+curl -X GET \
+  http://localhost:3000/auth/generate-api-key \
+  -H 'Authorization: Bearer YOUR_JWT_TOKEN_HERE'
+```
+
+**Logout:**
+```bash
+curl -X GET http://localhost:3000/auth/logout
+```
+
+### 2. Form Definition Endpoints
 
 **Create Contact Us Form:**
 ```bash
@@ -269,7 +336,7 @@ curl -X DELETE \
   -H 'X-API-KEY: YOUR_API_KEY'
 ```
 
-### 2. Form Submission Endpoints
+### 3. Form Submission Endpoints
 
 **Submit "contact-us" form (Valid):**
 ```bash
@@ -315,8 +382,11 @@ curl -X DELETE \
 An Insomnia requests file (`insomnia-requests.json`) is provided at the project root. You can import this file into Insomnia to quickly set up and test all API endpoints.
 
 1.  **Import:** In Insomnia, go to `File` > `Import` > `From File` and select `insomnia-requests.json`.
-2.  **Environment:** Select the "Base Environment" from the environment dropdown. Update the `apiKey` variable with your actual API key. You can also set `formDefinitionName` and `formEntryId` for convenience.
-3.  **Send Requests:** Navigate through the "Form Definitions" and "Form Submissions" folders and send requests.
+2.  **Environment:** Select the "Base Environment" from the environment dropdown.
+3.  **Authentication:**
+    *   For "Auth Controller" requests (e.g., `/auth/status`, `/auth/generate-api-key`), ensure you have a valid JWT. After a successful Google OAuth login (`GET /auth/google` followed by `GET /auth/google/callback`), Insomnia will store the JWT in cookies, which will be automatically sent with subsequent requests. Alternatively, you can manually set the `Authorization: Bearer YOUR_JWT_TOKEN_HERE` header.
+    *   For "Form Definition Controller" and "Form Submission Controller" requests, set the `X-API-KEY` header with your generated API key.
+4.  **Send Requests:** Navigate through the folders and send requests.
 
 ## Contributing
 

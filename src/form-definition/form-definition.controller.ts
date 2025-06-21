@@ -1,12 +1,17 @@
 import { Controller, Get, Post, Body, Param, Put, Delete, HttpCode, HttpStatus, UseGuards, Req } from '@nestjs/common';
 import { Request } from 'express'; // Import Request from express
-import { ApiKeyAuthGuard } from '../auth/api-key-auth.guard';
+import { ApiKeyAuthGuard } from '../auth/api-key-auth.guard'; // Import ApiKeyAuthGuard
+// import { JwtAuthGuard } from '../auth/jwt-auth.guard'; // Import JwtAuthGuard
 import { FormDefinitionService } from './form-definition.service';
 import { CreateFormDefinitionDto } from './dto/create-form-definition.dto';
 import { UpdateFormDefinitionDto } from './dto/update-form-definition.dto';
 import { FormDefinition } from '../database/schemas/form-definition.schema'; // Import Mongoose schema
 import { Types } from 'mongoose'; // Import Types for ObjectId
 
+// --- OLD IMPLEMENTATION (v1) ---
+// @UseGuards(ApiKeyAuthGuard, JwtAuthGuard) // Use both ApiKeyAuthGuard and JwtAuthGuard
+// --- NEW IMPLEMENTATION (v1) ---
+// Use only ApiKeyAuthGuard for form definition management as per user's request.
 @UseGuards(ApiKeyAuthGuard)
 @Controller('form-definitions')
 export class FormDefinitionController {
